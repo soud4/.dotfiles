@@ -11,7 +11,7 @@
     export HISTFILESIZE=20000
     export PROMPT_DIRTRIM=3
     export TERM=xterm-256color
-
+    export SUDO_EDITOR=nvim 
 
     # Solo si estamos dentro de tmux
     if [[ $TERM == "tmux-256color" || $TERM == "tmux" ]]; then
@@ -25,14 +25,12 @@
     else
         export PS1='$([[ $? -eq 0 ]] && printf "󰊠 " || printf "\[\e[38;2;255;0;0m\]󰊠 \[\e[0m\]")\[\e[1;34m\]\w\[\e[0m\] '
     fi 
-    export EDITOR=nvim
-    export VISUAL=nvim
+
 # ----------------- ##
 
 
-
 ## ---- AUTOMATIC TOOl SETUP ---- ##
-    eval "$(fnm env --use-on-cd --shell bash)"
+
 
 ## ------------------------------ ##
 
@@ -47,7 +45,6 @@
     alias lt='ls --human-readable --size -1 -S --classify'
     alias lu='du -sh * | sort -h'
     alias lc='find . -type f | wc -l'
-    alias ld='ls -d */'
     alias ..='cd ..'
     alias ...='cd ../..'
     alias -- -='cd -'
@@ -59,12 +56,8 @@
     alias diff='diff --color=auto'
     alias cb='xclip -selection clipboard'
 
-    alias vi=nvim
     alias cat="cat -n "
     alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-
-    alias usb-mount="sudo mount -t auto -o uid=$(id -u),gid=$(id -g),umask=0022 /dev/sda1 /mnt/usb"
-    alias usb-umount="sudo umount /mnt/usb"
 
     ## File managment with prompts
     alias mv='mv -i'
@@ -72,16 +65,12 @@
     alias cp='cp -i'
     alias ln='ln -i'
     alias mkdir='mkdir -pv'
-    alias thome='tmux attach -t home || tmux new-session -s home'
+    alias tsod='tmux attach -t souda || tmux new-session -s souda'
     alias dusage='du -sh * 2>/dev/null'
 
-
-    alias sigon='eval $(ssh-agent -s) && ssh-add ~/.ssh/id_ed25519'
-    alias sigoff='eval "$(ssh-agent -k)"'
     # alias code='code --reuse-window --disable-workspace-trust '
 
 ## ----------------- ##
-
 
 
 ## ---- SHELL OPTIONS ---- ##
@@ -127,13 +116,31 @@
         fi
     }
 
-    tempupload() {
-      UPLOAD_DATABASE="$HOME/.0x0-uploads"
-      uploaded_link=$(curl -F"file=@$1" https://0x0.st)
-      echo "$1 - $uploaded_link" | tee -a $UPLOAD_DATABASE
+    notes() {
+        local dir="$HOME/notes"
 
+        mkdir -p "$dir"
+
+        local out query selection
+
+        out=$(
+            { find "$dir" -type f 2>/dev/null | sed "s|^$dir/||"; echo; } |
+            fzf \
+                --prompt="Nota > " \
+                --print-query \
+                --height=40%
+        ) || return
+
+        query=$(printf '%s\n' "$out" | head -n1)
+        selection=$(printf '%s\n' "$out" | tail -n +2 | sed '/^$/d')
+
+        if [[ -n "$selection" ]]; then
+            nvim "$dir/$selection"
+        elif [[ -n "$query" ]]; then
+            [[ "$query" != *.* ]] && query="${query}.md"
+            nvim "$dir/$query"
+        fi
     }
-
 ## ------------------- ##
 
 
@@ -144,5 +151,8 @@
     bind 'set show-mode-in-prompt on'
     bind 'set vi-ins-mode-string "   "'
     bind 'set vi-cmd-mode-string "   "'
+
 ## ------------------ ##
+
+eval "$(zoxide init bash)"
 

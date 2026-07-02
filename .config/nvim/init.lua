@@ -6,9 +6,9 @@ vim.g.maplocalleader = "\\"
 -- Carga la configuración principal
 -- require("core.lazy")
 
- if vim.loop.getuid() ~= 0 then
-   require("core.lazy")
- end
+if vim.loop.getuid() ~= 0 then
+	require("core.lazy")
+end
 
 -- Opciones y keymaps básicos
 require("core.options")

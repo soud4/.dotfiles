@@ -1,27 +1,25 @@
 return {
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      -- local lspconfig = require("lspconfig")
+	{
+		"neovim/nvim-lspconfig",
+		config = function()
+			vim.lsp.config("bashls", {})
 
-      -- 🐚 Bash
-        vim.lsp.config("bashls", {})
-
-      -- 🧠 Lua (Neovim config)
-        vim.lsp.config("lua_ls", {
-        settings = {
-          Lua = {
-            runtime = { version = "LuaJIT" },
-            diagnostics = {
-              globals = { "vim" }, -- reconoce `vim` como global
-            },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-              checkThirdParty = false,
-            },
-          },
-        },
-      })
-    end,
-  },
+			vim.lsp.config("lua_ls", {
+				settings = {
+					Lua = {
+						runtime = { version = "LuaJIT" },
+						diagnostics = {
+							globals = { "vim" }, -- reconoce `vim` como global
+						},
+						workspace = {
+							library = vim.api.nvim_get_runtime_file("", true),
+							checkThirdParty = false,
+						},
+					},
+				},
+			})
+            vim.lsp.config("clangd", {})
+            vim.lsp.enable("clangd")
+		end,
+	},
 }

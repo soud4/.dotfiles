@@ -7,12 +7,12 @@ return {
       require("ayu").setup({
         mirage = dark, -- true para usar el modo mirage (oscuro suave), false para dark clásico
         overrides = {
-            Normal = { bg = "#040404" },
-            NormalNC = { bg = "#040404" },
-            SignColumn = { bg = "#040404" },
-            VertSplit = { bg = "#040404" },
-            EndOfBuffer = { bg = "#040404" },
-            LineNr = { bg = "#040404" },
+            Normal = { bg = "none" },
+            NormalNC = { bg = "none" },
+            SignColumn = { bg = "none" },
+            VertSplit = { bg = "none" },
+            EndOfBuffer = { bg = "none" },
+            LineNr = { bg = "none" },
         },
         term_colors = true,
       })
