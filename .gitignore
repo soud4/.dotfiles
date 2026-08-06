@@ -43,7 +43,11 @@ sway.log
 .themes
 
 
-
-
-
-
+.android/
+.antigravity-ide/
+.config/Antigravity IDE/
+.config/QtProject.conf
+.config/libfm/
+.config/pcmanfm/
+.java/
+.config/dconf/user
