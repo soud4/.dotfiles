@@ -1,158 +1,227 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║                    SWAY WINDOW MANAGER CONFIG                    ║
+# ║                  Referencia: man 5 sway                          ║
+# ╚══════════════════════════════════════════════════════════════════╝
 
-#
-# Copy this to ~/.config/sway/config and edit it to your liking.
-# aa
-# Read `man 5 sway` for a complete reference.
 
-#input type:keyboard xkb_capslock enabled
-input type:keyboard xkb_numlock enabled
+###############################################################################
+# VARIABLES
+###############################################################################
+
+# Tecla modificadora principal (Mod4 = Super/Win | Mod1 = Alt)
+set $mod Mod4
+
+# Teclas de dirección estilo Vim
+set $left  h
+set $down  j
+set $up    k
+set $right l
+
+# Terminal preferida
+set $term foot
+
+
+###############################################################################
+# FUENTE
+###############################################################################
 
 font pango:Inter Bold 8
 
 
-### Variables
-#
-# Logo key. Use Mod1 for Alt.
-set $mod Mod4
-# Home row direction keys, like vim
-set $left h
-set $down j
-set $up k
-set $right l
-# Your preferred terminal emulator
-set $term foot
-# Your preferred application launcher
-set $menu wmenu-run
+###############################################################################
+# COLORES (Tema Ayu adaptado)
+###############################################################################
+
+set $bg      #060504
+set $fg      #FAF4EB
+set $accent  #ABABAB
+set $blue    #59c2ff
+set $red     #f07178
+set $green   #aad94c
+set $gray    #3a3a3a
+
+# client.<estado>       <borde>  <fondo>  <texto>  <indicador>  <borde-hijo>
+client.focused          $accent  $accent  $bg      $accent      $accent
+client.focused_inactive $gray    $gray    $fg      $gray        $gray
+client.unfocused        $bg      $bg      $fg      $bg          $bg
+client.urgent           $red     $red     $bg      $red         $red
+client.placeholder      $bg      $bg      $fg      $bg          $bg
+client.background       $bg
 
 
-bindsym $mod+d exec ~/.config/sway/scripts/wmenu_run.sh
-### Output configuration
-#
-# Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
-output * bg ~/.config/sway/wall.jpg fit
-# output * color_profile icc "~/.config/sway/saturated.icc"
-#
-# Example configuration:
-#
-#   output HDMI-A-1 resolution 1920x1080 position 1920,0
-#
-# You can get the names of your outputs by running: swaymsg -t get_outputs
+###############################################################################
+# APARIENCIA DE VENTANAS
+###############################################################################
 
-### Idle configuration
-#
-# Example configuration:
-# aa
+# Borde de 1px sin barra de título para ventanas normales y flotantes
+default_border          pixel 1
+default_floating_border pixel 1
 
-bindsym $mod+Shift+y exec swaylock
-
-exec swayidle -w \
- timeout 300 'swaylock' \
- timeout 600 'swaymsg "output * power off"' \
- resume 'swaymsg "output * power on"' \
- before-sleep 'swaylock'
+# Padding interno del titlebar: horizontal x vertical
+titlebar_padding 4 1
 
 
-# This will lock your screen after 300 seconds of inactivity, then turn off
-# your displays after another 300 seconds, and turn your screens back on when
-# resumed. It will also lock your screen before your computer goes to sleep.
 
-### Input configuration
-#
-# Example configuration:
-#
-#   input type:touchpad {
-#       dwt enabled
-#       tap enabled
-#       natural_scroll enabled
-#       middle_emulation enabled
-#   }
-#
-#   input type:keyboard {
-#       xkb_layout "eu"
-#   }
-#
-# You can also configure each device individually.
-# Read `man 5 sway-input` for more information about this section.
+###############################################################################
+# INPUT — TECLADO
+###############################################################################
+
+# Activar numlock al iniciar sesión
+input type:keyboard xkb_numlock enabled
+
 input type:keyboard {
     xkb_layout latam
-    xkb_model pc105
+    xkb_model  pc105
 
+    # Tiempo antes de que empiece a repetir (ms) y velocidad (chars/seg)
     repeat_delay 300
-    repeat_rate 50
+    repeat_rate  50
 }
 
+
+###############################################################################
+# INPUT — TOUCHPAD
+###############################################################################
+
+# Para obtener el ID de tu dispositivo: swaymsg -t get_inputs
 input "1267:12871:ELAN06FA:00_04F3:3247_Touchpad" {
-    tap enabled
-    drag enabled
+    # Tap con uno/dos/tres dedos
+    tap       enabled
+    drag      enabled
     drag_lock disabled
 
+    # Scroll natural (mismo sentido que en móvil)
     natural_scroll enabled
 
-    dwt enabled
+    # Deshabilitar mientras se escribe y mientras se usa el trackpoint
+    dwt  enabled
     dwtp enabled
 
+    # flat = sin aceleración adaptativa (movimiento más predecible)
     accel_profile flat
     pointer_accel -0.1
 
-    click_method clickfinger
+    # 1 dedo = clic izq | 2 dedos = clic der | 3 dedos = clic medio
+    click_method   clickfinger
     tap_button_map lrm
 
     middle_emulation enabled
-
-    scroll_method two_finger
+    scroll_method    two_finger
 }
 
-### Key bindings
-#
-# Basics:
-#
-    # Start a terminal
+
+###############################################################################
+# ASIENTO (SEAT)
+###############################################################################
+
+seat seat0 {
+    # Ocultar cursor del mouse tras 3 segundos de inactividad
+    hide_cursor 3000
+}
+
+
+###############################################################################
+# ATAJOS — BÁSICOS
+###############################################################################
+
+# Abrir terminal
 bindsym $mod+Return exec $term
 
-# Kill focused window
+# Cerrar ventana enfocada
 bindsym $mod+Shift+q kill
 
-
-# Drag floating windows by holding down $mod and left mouse button.
-# Resize them with right mouse button + $mod.
-# Despite the name, also works for non-floating windows.
-# Change normal to inverse to use left mouse button for resizing and right
-# mouse button for dragging.
+# Arrastrar ventanas flotantes: $mod + clic izq
+# Redimensionar ventanas flotantes: $mod + clic der
 floating_modifier $mod normal
 
-# Reload the configuration file
+# Recargar el config de sway sin reiniciar la sesión
 bindsym $mod+Shift+c reload
 
-# Exit sway (logs you out of your Wayland session)
-bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
-#
-# Moving around:
-#
-# Move your focus around
-bindsym $mod+$left focus left
-bindsym $mod+$down focus down
-bindsym $mod+$up focus up
+# Salir de sway (cierra la sesión Wayland)
+bindsym $mod+Shift+e exec swaynag -t warning \
+    -m '¿Salir de Sway? Esto cerrará tu sesión Wayland.' \
+    -B 'Sí, salir' 'swaymsg exit'
+
+
+###############################################################################
+# ATAJOS — APLICACIONES
+###############################################################################
+
+# Abrir navegador
+bindsym $mod+Shift+b exec /usr/bin/thorium-browser
+
+# Definir wmenu con estilo personalizado
+set $menu wmenu-run -i \
+    -f "Inter Bold 8" \
+    -p " 󰄛 Run " \
+    -N 181818 -n b0b0b0 \
+    -M 303030 -m ffffff \
+    -S ffffff -s 111111
+
+# Atajo para lanzarlo
+bindsym $mod+d exec $menu
+
+
+bindsym $mod+Shift+p exec $menu
+
+# Scratchpad terminal: toggle mostrar/ocultar con $mod+` (tecla grave/tilde)
+# Se inicia automáticamente al arrancar sway (ver sección AUTOSTART)
+bindsym $mod+grave [title="scratch-terminal"] scratchpad show
+
+# Descomenta la línea de tu gestor de archivos preferido:
+# bindsym $mod+Shift+f exec thunar
+# bindsym $mod+Shift+f exec nautilus
+# bindsym $mod+Shift+f exec pcmanfm
+
+
+###############################################################################
+# ATAJOS — FOCO DE VENTANAS
+###############################################################################
+
+# Mover foco — teclas Vim
+bindsym $mod+$left  focus left
+bindsym $mod+$down  focus down
+bindsym $mod+$up    focus up
 bindsym $mod+$right focus right
-# Or use $mod+[up|down|left|right]
-bindsym $mod+Left focus left
-bindsym $mod+Down focus down
-bindsym $mod+Up focus up
+
+# Mover foco — teclas de dirección
+bindsym $mod+Left  focus left
+bindsym $mod+Down  focus down
+bindsym $mod+Up    focus up
 bindsym $mod+Right focus right
 
-# Move the focused window with the same, but add Shift
-bindsym $mod+Shift+$left move left
-bindsym $mod+Shift+$down move down
-bindsym $mod+Shift+$up move up
+# Ciclar al siguiente contenedor en el workspace actual
+bindsym $mod+Tab focus next
+
+# Subir foco al contenedor padre
+bindsym $mod+a focus parent
+
+# Alternar foco entre área de tiling y área flotante
+bindsym $mod+space focus mode_toggle
+
+
+###############################################################################
+# ATAJOS — MOVER VENTANAS
+###############################################################################
+
+# Mover ventana — teclas Vim
+bindsym $mod+Shift+$left  move left
+bindsym $mod+Shift+$down  move down
+bindsym $mod+Shift+$up    move up
 bindsym $mod+Shift+$right move right
-# Ditto, with arrow keys
-bindsym $mod+Shift+Left move left
-bindsym $mod+Shift+Down move down
-bindsym $mod+Shift+Up move up
+
+# Mover ventana — teclas de dirección
+bindsym $mod+Shift+Left  move left
+bindsym $mod+Shift+Down  move down
+bindsym $mod+Shift+Up    move up
 bindsym $mod+Shift+Right move right
-#
-# Workspaces:
-#
-# Switch to workspace
+
+
+###############################################################################
+# ATAJOS — WORKSPACES
+###############################################################################
+
+# Ir al workspace N
 bindsym $mod+1 workspace number 1
 bindsym $mod+2 workspace number 2
 bindsym $mod+3 workspace number 3
@@ -163,7 +232,8 @@ bindsym $mod+7 workspace number 7
 bindsym $mod+8 workspace number 8
 bindsym $mod+9 workspace number 9
 bindsym $mod+0 workspace number 10
-# Move focused container to workspace
+
+# Mover ventana al workspace N (y seguirla con $mod+Shift+Tab para volver)
 bindsym $mod+Shift+1 move container to workspace number 1
 bindsym $mod+Shift+2 move container to workspace number 2
 bindsym $mod+Shift+3 move container to workspace number 3
@@ -174,153 +244,187 @@ bindsym $mod+Shift+7 move container to workspace number 7
 bindsym $mod+Shift+8 move container to workspace number 8
 bindsym $mod+Shift+9 move container to workspace number 9
 bindsym $mod+Shift+0 move container to workspace number 10
-# Note: workspaces can have any name you want, not just numbers.
-# We just use 1-10 as the default.
-#
-# Layout stuff:
-#
-# You can "split" the current object of your focus with
-# $mod+b or $mod+v, for horizontal and vertical splits
-# respectively.
+
+# Navegar entre workspaces adyacentes
+bindsym $mod+Shift+Tab    workspace prev
+bindsym $mod+bracketleft  workspace prev
+bindsym $mod+bracketright workspace next
+
+
+###############################################################################
+# ATAJOS — LAYOUT
+###############################################################################
+
+# Dividir el contenedor actual: horizontal ($mod+b) o vertical ($mod+v)
 bindsym $mod+b splith
 bindsym $mod+v splitv
 
-# Switch the current container between different layout styles
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+# Cambiar estilo de layout del workspace
+bindsym $mod+s layout stacking   # ventanas apiladas con lista de títulos
+bindsym $mod+w layout tabbed     # ventanas en pestañas
+bindsym $mod+e layout toggle split  # alternar split h/v
 
-# Make the current focus fullscreen
+# Pantalla completa para la ventana enfocada
 bindsym $mod+f fullscreen
 
-# Toggle the current focus between tiling and floating mode
+# Alternar entre flotante y tiling
 bindsym $mod+Shift+space floating toggle
 
-# Swap focus between the tiling area and the floating area
-bindsym $mod+space focus mode_toggle
 
-# Move focus to the parent container
-bindsym $mod+a focus parent
-#
-# Scratchpad:
-#
-# Sway has a "scratchpad", which is a bag of holding for windows.
-# You can send windows there and get them back later.
+###############################################################################
+# SCRATCHPAD
+###############################################################################
 
-# Move the currently focused window to the scratchpad
+# El scratchpad es una "bolsa de holding": ventanas invisibles disponibles
+# en cualquier workspace. Útil para terminales, música, herramientas, etc.
+
+# Enviar ventana enfocada al scratchpad
 bindsym $mod+minus move scratchpad
 
-# Show the next scratchpad window or hide the focused scratchpad window.
-# If there are multiple scratchpad windows, this command cycles through them.
+# Mostrar/ocultar el scratchpad (cicla si hay varias ventanas)
 bindsym $mod+Shift+minus scratchpad show
-#
-# Resizing containers:
-#
+
+
+###############################################################################
+# MODO RESIZE
+###############################################################################
+
 mode "resize" {
-    # left will shrink the containers width
-    # right will grow the containers width
-    # up will shrink the containers height
-    # down will grow the containers height
-    bindsym $left resize shrink width 10px
-    bindsym $down resize grow height 10px
-    bindsym $up resize shrink height 10px
-    bindsym $right resize grow width 10px
+    # Redimensionar con teclas Vim
+    bindsym $left  resize shrink width  10px
+    bindsym $down  resize grow   height 10px
+    bindsym $up    resize shrink height 10px
+    bindsym $right resize grow   width  10px
 
-    # Ditto, with arrow keys
-    bindsym Left resize shrink width 10px
-    bindsym Down resize grow height 10px
-    bindsym Up resize shrink height 10px
-    bindsym Right resize grow width 10px
+    # Redimensionar con teclas de dirección
+    bindsym Left  resize shrink width  10px
+    bindsym Down  resize grow   height 10px
+    bindsym Up    resize shrink height 10px
+    bindsym Right resize grow   width  10px
 
-    # Return to default mode
+    # Salir del modo resize
     bindsym Return mode "default"
     bindsym Escape mode "default"
 }
+
 bindsym $mod+r mode "resize"
 
 
+###############################################################################
+# TECLAS MULTIMEDIA
+# --locked = funcionan incluso con pantalla bloqueada
+###############################################################################
+
+# Volumen del sistema
 bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
 bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym --locked XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym --locked XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym --locked XF86AudioMute        exec pactl set-sink-mute   @DEFAULT_SINK@ toggle
+bindsym --locked XF86AudioMicMute     exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Brillo de pantalla (requiere brightnessctl)
 bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
-bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
-bindsym --locked XF86AudioPlay exec playerctl play-pause
+bindsym --locked XF86MonBrightnessUp   exec brightnessctl set 5%+
+
+# Control de reproducción multimedia (requiere playerctl)
+bindsym --locked XF86AudioPlay  exec playerctl play-pause
 bindsym --locked XF86AudioPause exec playerctl play-pause
-bindsym --locked XF86AudioNext exec playerctl next
-bindsym --locked XF86AudioPrev exec playerctl previous
-bindsym --locked XF86AudioStop exec playerctl stop
-bindsym Print+s exec grim -g "$(slurp)" - | wl-copy
-bindsym Print+c exec grim -g "$(slurp -p)" -t ppm - | convert - -format "%[pixel:p{0,0}]" txt:- | tail -n 1 | cut -d " " -f 4 | wl-copy
-
-seat seat0 {
-    hide_cursor 3000
-}
+bindsym --locked XF86AudioNext  exec playerctl next
+bindsym --locked XF86AudioPrev  exec playerctl previous
+bindsym --locked XF86AudioStop  exec playerctl stop
 
 
+###############################################################################
+# CAPTURAS DE PANTALLA
+# Requiere: grim, slurp, wl-copy, imagemagick
+###############################################################################
 
-exec {
-    gsettings set org.gnome.desktop.interface font-name "Inter 9"
-    gsettings set org.gtk.Settings.FileChooser window-size '(1000, 500)'
-    gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
-    gsettings set org.gnome.desktop.interface.wm.preferences theme 'Adwaita-dark'
-    gsettings set org.gnome.desktop.interface cursor-size '24'
-    gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'
-    gsettings set org.gnome.desktop.interface font-hinting 'full'
-}
+# Print                → Captura la pantalla completa al portapapeles
+# $mod+Print           → Captura una región seleccionada al portapapeles
+# $mod+Shift+Print     → Captura el color de un píxel (eyedropper) al portapapeles
 
-for_window [title="^Picture in picture$"] floating enable
-for_window [title="Picture-in-Picture"] floating enable
-for_window [app_id="librewolf"] title_format "Librewolf"
+bindsym Print exec \
+    grim - | wl-copy
+
+bindsym $mod+Print exec \
+    grim -g "$(slurp)" - | wl-copy
+
+bindsym $mod+Shift+Print exec \
+    grim -g "$(slurp -p)" -t ppm - \
+    | convert - -format "%[pixel:p{0,0}]" txt:- \
+    | tail -n 1 | cut -d " " -f 4 | wl-copy
 
 
+###############################################################################
+# REGLAS DE VENTANAS (for_window)
+###############################################################################
 
-for_window [window_role="pop-up"] floating enable
-for_window [window_role="dialog"] floating enable
-for_window [window_type="dialog"] floating enable
+# --- Flotantes por tipo/rol XDG estándar ---
+for_window [window_role="pop-up"]  floating enable
+for_window [window_role="dialog"]  floating enable
+for_window [window_type="dialog"]  floating enable
 for_window [window_type="utility"] floating enable
 for_window [window_type="toolbar"] floating enable
-for_window [window_type="splash"] floating enable
+for_window [window_type="splash"]  floating enable
+
+# --- Picture-in-Picture (YouTube, Firefox, Librewolf) ---
+for_window [title="^Picture in picture$"] floating enable
+for_window [title="Picture-in-Picture"]   floating enable
+
+# --- Visores de imágenes y video ---
 for_window [app_id="imv"] floating enable
 for_window [app_id="mpv"] floating enable
 
+# --- Diálogos de archivo (abrir/guardar) ---
 for_window [title="Open File"] floating enable
 for_window [title="Save File"] floating enable
+
+# Centrar todas las ventanas flotantes automáticamente
 for_window [floating] move position center
 
+# --- Librewolf ---
+# Ocultar título de pestaña (no muestra la URL en la barra de título)
+for_window [app_id="librewolf"] title_format "Librewolf"
+# Reducir saturación de color — 0=gris total, 10=normal; ajusta a tu gusto
 for_window [app_id="librewolf"] saturation set 5
 
-for_window [title="scratch-terminal"] floating enable
-for_window [title="scratch-terminal"] move position center
-for_window [title="scratch-terminal"] resize set width 1600 px height 900 px
-for_window [title="scratch-terminal"] move scratchpad
+# --- Terminal scratchpad ---
+# Se crea al iniciar sway (ver AUTOSTART), aquí se configura su aspecto
+for_window [title="scratch-terminal"] {
+    floating enable
+    move position center
+    resize set width 1600 px height 900 px
+    move scratchpad
+}
 
+
+###############################################################################
+# AUTOSTART
+###############################################################################
+
+exec {
+    # Fuente y tema GTK para apps Qt/GTK bajo Wayland
+    gsettings set org.gnome.desktop.interface font-name         "Inter 9"
+    gsettings set org.gnome.desktop.interface cursor-size       '24'
+    gsettings set org.gnome.desktop.interface gtk-theme 'Squared-black-old'
+    gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'
+    gsettings set org.gnome.desktop.interface font-hinting      'full'
+    gsettings set org.gtk.Settings.FileChooser window-size      '(1000, 500)'
+    gsettings set org.gnome.desktop.interface.wm.preferences theme 'Adwaita-dark'
+    gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
+    gsettings set org.gnome.desktop.interface cursor-theme 'Kurisu-Animated-WhiteCoat'
+    gsettings set org.gnome.desktop.interface cursor-size 24
+
+    # Lanzar la terminal de scratchpad en segundo plano
+    # ($mod+` para mostrarla / ocultarla desde cualquier workspace)
+    foot --title scratch-terminal
+}
+
+seat seat0 xcursor_theme Kurisu-Animated-WhiteCoat 24
+
+
+###############################################################################
+# INCLUDES
+###############################################################################
+
+# Cargar configuraciones adicionales del sistema (waybar, etc.)
 include /etc/sway/config.d/*
-
-
-
-### Colores base (Ayu adaptado)
-set $bg        #060504
-set $fg        #FAF4EB
-set $accent    #ABABAB
-set $blue      #59c2ff
-set $red       #f07178
-set $green     #aad94c
-set $gray      #3a3a3a
-
-client.focused          $accent  $accent  $bg   $accent  $accent
-client.focused_inactive $gray    $gray    $fg   $gray    $gray
-client.unfocused        $bg      $bg      $fg   $bg      $bg
-client.urgent           $red     $red     $bg   $red     $red
-client.placeholder      $bg      $bg      $fg   $bg      $bg
-
-client.background       $bg
-
-titlebar_padding 4 1
-default_border pixel 1
-default_floating_border pixel 1
-
-
-bindsym $mod+Tab focus next
-
-

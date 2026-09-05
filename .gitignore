@@ -41,8 +41,6 @@ sway.log
 .config/mozilla
 .config/Antigravity
 .themes
-
-
 .android/
 .antigravity-ide/
 .config/Antigravity IDE/
@@ -50,4 +48,18 @@ sway.log
 .config/libfm/
 .config/pcmanfm/
 .java/
+.config/dconf/user
+.Xresources
+.codeium/
+.config/gtk-4.0/
+.config/intelephense/
+.config/pulse/**
+.config/sway/wallpaper.png
+.gradle/
+.icons/
+.mongodb/
+.sdkman/
+Laboratory/
+.config/opencode/
+.config/pavucontrol.ini
 .config/dconf/user

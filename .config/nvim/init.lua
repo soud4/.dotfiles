@@ -6,7 +6,8 @@ vim.g.maplocalleader = "\\"
 -- Carga la configuración principal
 -- require("core.lazy")
 
-if vim.loop.getuid() ~= 0 then
+local uv = vim.uv or vim.loop
+if uv.getuid() ~= 0 then
 	require("core.lazy")
 end
 

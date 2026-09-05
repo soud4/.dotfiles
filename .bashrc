@@ -58,6 +58,8 @@ else
     export PS1='$([[ $? -eq 0 ]] && printf "󰊠 " || printf "\[\e[38;2;255;0;0m\]󰊠 \[\e[0m\]")\[\e[1;34m\]\w\[\e[0m\] '
 fi
 
+eval "$(fnm env --use-on-cd --shell bash)"
+
 
 # ════════════════════════════════════════════════════════════
 # SHELL OPTIONS — Opciones de comportamiento de Bash
@@ -161,6 +163,11 @@ alias dusage='du -sh * 2>/dev/null | sort -h'
 # §5  FUNCIONES — Utilidades más complejas
 # ════════════════════════════════════════════════════════════
 
+srun() {
+    setsid "$@" >/dev/null 2>&1 &
+}
+complete -c srun
+
 # Crear directorio y entrar inmediatamente
 mkcd() {
     [[ -z "$1" ]] && { echo "Uso: mkcd <directorio>"; return 1; }
@@ -240,6 +247,25 @@ cdwhich() {
 }
 
 
+powermode() {
+    if [ "$1" = "1" ]; then
+        modo="performance"
+    else
+        modo="powersave"
+    fi
+    for gov in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        echo "$modo" | sudo tee "$gov" > /dev/null
+    done
+    echo "Gobernador cambiado a: $modo"
+}
+
+net_up() {
+    iface="${1:-enp3s0}"
+    sudo ip link set "$iface" up
+    sudo ip addr add 192.168.0.14/24 dev "$iface"
+    sudo ip route add default via 192.168.0.1
+}
+
 # ════════════════════════════════════════════════════════════
 # READLINE / BINDKEYS — Atajos de teclado
 # ════════════════════════════════════════════════════════════
@@ -315,3 +341,15 @@ fi
 # Completado del alias `dotfiles` igual que git
 __git_complete dotfiles __git_main 2>/dev/null || true
 
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# pnpm
+export PNPM_HOME="/home/souda/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
