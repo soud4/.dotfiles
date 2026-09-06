@@ -63,3 +63,8 @@ Laboratory/
 .config/opencode/
 .config/pavucontrol.ini
 .config/dconf/user
+.config/cmus/**
+.config/sway/wall.jpg
+.config/sway/wallpaper.jpg
+
+

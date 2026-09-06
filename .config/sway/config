@@ -396,10 +396,14 @@ for_window [title="scratch-terminal"] {
     move scratchpad
 }
 
+for_window [app_id="antigravity-ide"] opacity 0.94
+
 
 ###############################################################################
 # AUTOSTART
 ###############################################################################
+
+output * bg ~/.config/sway/wallpaper.jpg fill
 
 exec {
     # Fuente y tema GTK para apps Qt/GTK bajo Wayland
