@@ -115,7 +115,6 @@ alias du='du -h'                               # Tamaños legibles
 alias free='free -h'                           # RAM en MB/GB
 alias ps='ps auxf'                             # Procesos en árbol
 alias psg='ps aux | grep -v grep | grep -i'   # Buscar proceso: psg <nombre>
-alias top='htop 2>/dev/null || top'            # Prefiere htop si está instalado
 alias ports='ss -tulpn'                        # Puertos abiertos (reemplaza netstat)
 alias myip='curl -s ifconfig.me && echo'       # IP pública
 

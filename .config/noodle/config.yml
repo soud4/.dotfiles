@@ -1,0 +1,5 @@
+theme: noodle
+layout: stacked
+confirm_undo_all: true
+collections:
+  - /home/souda/Desktop/sodapp/sodapi

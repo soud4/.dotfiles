@@ -367,8 +367,10 @@ for_window [window_type="toolbar"] floating enable
 for_window [window_type="splash"]  floating enable
 
 # --- Picture-in-Picture (YouTube, Firefox, Librewolf) ---
-for_window [title="^Picture in picture$"] floating enable
-for_window [title="Picture-in-Picture"]   floating enable
+for_window [title="^Picture in picture$"] floating enable, sticky enable, border pixel 1
+for_window [title="Picture-in-Picture"]   floating enable, sticky enable, border pixel 1
+no_focus [title="^Picture in picture$"]
+no_focus [title="Picture-in-Picture"]
 
 # --- Visores de imágenes y video ---
 for_window [app_id="imv"] floating enable
@@ -380,6 +382,11 @@ for_window [title="Save File"] floating enable
 
 # Centrar todas las ventanas flotantes automáticamente
 for_window [floating] move position center
+
+# --- Reubicar el PiP a una esquina DESPUÉS de la regla genérica de centrado ---
+for_window [title="^Picture in picture$"] move position 1500 850
+for_window [title="Picture-in-Picture"]   move position 1500 850
+
 
 # --- Librewolf ---
 # Ocultar título de pestaña (no muestra la URL en la barra de título)
@@ -404,6 +411,10 @@ for_window [app_id="antigravity-ide"] opacity 0.94
 ###############################################################################
 
 output * bg ~/.config/sway/wallpaper.jpg fill
+
+output eDP-1 position 0,0
+output HDMI-A-1 position 1920,0
+
 
 exec {
     # Fuente y tema GTK para apps Qt/GTK bajo Wayland
@@ -432,3 +443,9 @@ seat seat0 xcursor_theme Kurisu-Animated-WhiteCoat 24
 
 # Cargar configuraciones adicionales del sistema (waybar, etc.)
 include /etc/sway/config.d/*
+
+
+bar {
+    status_command i3status
+    mode dock
+}
