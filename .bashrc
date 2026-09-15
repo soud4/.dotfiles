@@ -13,13 +13,13 @@ esac
 # ════════════════════════════════════════════════════════════
 # EXPORTS — Variables de entorno globales
 # ════════════════════════════════════════════════════════════
-
+export PROMPT_DIRTRIMS=1
 export TERM=xterm-256color          # Color básico por defecto
 export SUDO_EDITOR=nvim             # Editor que usa sudo visudo, etc.
 export EDITOR=nvim                  # Editor por defecto del sistema
 export VISUAL=nvim
 export PAGER=less                   # Paginador por defecto
-export LESS='-R --quit-if-one-screen --ignore-case'
+export LESS='-R -F -X -i -M -j.5 -# .5 -~ -N --quit-if-one-screen --ignore-case'
 
 # Historial — más grande, sin duplicados, con timestamp
 export HISTSIZE=10000               # Líneas en memoria
@@ -51,13 +51,7 @@ esac
 # ════════════════════════════════════════════════════════════
 
 # En una TTY real (Ctrl+Alt+F1) usamos prompt minimalista sin nerd fonts
-if [[ $(tty) == /dev/tty* ]]; then
-    export PS1="\[\e[1;31m\][TTY \l]\[\e[0m\] \u@\h:\w\$ "
-else
-    # Prompt con nerd font: ícono verde si último comando OK, rojo si falló
-    export PS1='$([[ $? -eq 0 ]] && printf "󰊠 " || printf "\[\e[38;2;255;0;0m\]󰊠 \[\e[0m\]")\[\e[1;34m\]\w\[\e[0m\] '
-fi
-
+export PS1='\[\e[1;36m\]\w\[\e[0m\] \$ '
 eval "$(fnm env --use-on-cd --shell bash)"
 
 
@@ -123,7 +117,7 @@ alias v='nvim'
 alias vi='nvim'
 alias vim='nvim'
 alias e='$EDITOR'
-alias reload='source ~/.bashrc && echo "~/.bashrc recargado ✓"'
+alias reload='source ~/.bashrc && echo "# Reloaded config"'
 alias bashrc='$EDITOR ~/.bashrc'               # Editar este archivo rápidamente
 
 ## ── Portapapeles ─────────────────────────────────────────────
@@ -274,8 +268,8 @@ bind -r "\e<"
 
 # Muestra el modo vi actual en el prompt (INS / CMD)
 bind 'set show-mode-in-prompt on'
-bind 'set vi-ins-mode-string "  "'
-bind 'set vi-cmd-mode-string "󰯉  "'
+bind 'set vi-ins-mode-string "\1\e[38;5;142m\2[I]\1\e[0m\2 "'
+bind 'set vi-cmd-mode-string "\1\e[38;5;167m\2[N]\1\e[0m\2 "'
 
 # Búsqueda en historial con flechas (↑/↓ filtra según lo ya escrito)
 bind '"\e[A": history-search-backward'

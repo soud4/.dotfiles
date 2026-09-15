@@ -17,7 +17,7 @@ require("lazy").setup({
   spec = {
     { import = "plugins" },
   },
-  install = { colorscheme = { "ayu" } },
+  install = { colorscheme = { "gruvbox" } },
   checker = { enabled = true, notify = false },
   performance = {
     rtp = {

@@ -42,7 +42,7 @@ return {
         -- OPCIONES GLOBALES
         -- =====================================================================
         options = {
-          -- Tema de colores: 'auto' detecta tu colorscheme actual (ej. ayu)
+          -- Tema de colores: 'auto' detecta tu colorscheme actual (ej. gruvbox)
           theme = 'auto',
 
           -- Al dejarlos vacíos '', logramos el diseño "cuadrado / bloque plano"

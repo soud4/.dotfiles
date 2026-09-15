@@ -25,30 +25,9 @@ set $term foot
 # FUENTE
 ###############################################################################
 
-font pango:Inter Bold 8
-
-
-###############################################################################
-# COLORES (Tema Ayu adaptado)
-###############################################################################
-
-set $bg      #060504
-set $fg      #FAF4EB
-set $accent  #ABABAB
-set $blue    #59c2ff
-set $red     #f07178
-set $green   #aad94c
-set $gray    #3a3a3a
-
-# client.<estado>       <borde>  <fondo>  <texto>  <indicador>  <borde-hijo>
-client.focused          $accent  $accent  $bg      $accent      $accent
-client.focused_inactive $gray    $gray    $fg      $gray        $gray
-client.unfocused        $bg      $bg      $fg      $bg          $bg
-client.urgent           $red     $red     $bg      $red         $red
-client.placeholder      $bg      $bg      $fg      $bg          $bg
-client.background       $bg
-
-
+#font pango:TeX Gyre Heros Bold 9
+#font pango:MonaspiceNe NFP ExtraBold 9
+font pango:Inter ExtraBold 8
 ###############################################################################
 # APARIENCIA DE VENTANAS
 ###############################################################################
@@ -151,17 +130,17 @@ bindsym $mod+Shift+e exec swaynag -t warning \
 bindsym $mod+Shift+b exec /usr/bin/thorium-browser
 
 # Definir wmenu con estilo personalizado
-set $menu wmenu-run -i \
-    -f "Inter Bold 8" \
-    -p " 󰄛 Run " \
+set $menubin wmenu-run -i \
+    -f "MonaspiceNe NFP Bold 9" \
+    -p "RUN" \
     -N 181818 -n b0b0b0 \
     -M 303030 -m ffffff \
     -S ffffff -s 111111
 
-# Atajo para lanzarlo
-bindsym $mod+d exec $menu
+set $menuapp wmenu-drun
 
 
+bindsym $mod+d exec $menuapp
 bindsym $mod+Shift+p exec $menu
 
 # Scratchpad terminal: toggle mostrar/ocultar con $mod+` (tecla grave/tilde)
@@ -401,16 +380,15 @@ for_window [title="scratch-terminal"] {
     move position center
     resize set width 1600 px height 900 px
     move scratchpad
+    border 1
 }
-
-for_window [app_id="antigravity-ide"] opacity 0.94
 
 
 ###############################################################################
 # AUTOSTART
 ###############################################################################
 
-output * bg ~/.config/sway/wallpaper.jpg fill
+output * bg ~/.config/sway/wall.jpg fill
 
 output eDP-1 position 0,0
 output HDMI-A-1 position 1920,0
@@ -418,23 +396,23 @@ output HDMI-A-1 position 1920,0
 
 exec {
     # Fuente y tema GTK para apps Qt/GTK bajo Wayland
-    gsettings set org.gnome.desktop.interface font-name         "Inter 9"
-    gsettings set org.gnome.desktop.interface cursor-size       '24'
-    gsettings set org.gnome.desktop.interface gtk-theme 'Squared-black-old'
-    gsettings set org.gnome.desktop.interface font-antialiasing 'rgba'
-    gsettings set org.gnome.desktop.interface font-hinting      'full'
-    gsettings set org.gtk.Settings.FileChooser window-size      '(1000, 500)'
-    gsettings set org.gnome.desktop.interface.wm.preferences theme 'Adwaita-dark'
-    gsettings set org.gnome.desktop.interface icon-theme 'Adwaita'
-    gsettings set org.gnome.desktop.interface cursor-theme 'Kurisu-Animated-WhiteCoat'
-    gsettings set org.gnome.desktop.interface cursor-size 24
+    gsettings set org.gnome.desktop.interface font-name             "Inter 9"
+    gsettings set org.gnome.desktop.interface cursor-size           '24'
+    gsettings set org.gnome.desktop.interface gtk-theme             'Gruvbox-BL-MB-Dark-Medium'
+    gsettings set org.gnome.desktop.interface font-antialiasing     'rgba'
+    gsettings set org.gnome.desktop.interface font-hinting          'full'
+    gsettings set org.gtk.Settings.FileChooser window-size          '(1000, 500)'
+    gsettings set org.gnome.desktop.interface.wm.preferences theme  'Adwaita-dark'
+    gsettings set org.gnome.desktop.interface icon-theme            'Adwaita'
+    gsettings set org.gnome.desktop.interface cursor-theme          'phinger-cursors-dark'
+    gsettings set org.gnome.desktop.interface cursor-size           24
 
     # Lanzar la terminal de scratchpad en segundo plano
     # ($mod+` para mostrarla / ocultarla desde cualquier workspace)
     foot --title scratch-terminal
 }
 
-seat seat0 xcursor_theme Kurisu-Animated-WhiteCoat 24
+seat seat0 xcursor_theme phinger-cursors-dark 24
 
 
 ###############################################################################
@@ -442,10 +420,31 @@ seat seat0 xcursor_theme Kurisu-Animated-WhiteCoat 24
 ###############################################################################
 
 # Cargar configuraciones adicionales del sistema (waybar, etc.)
-include /etc/sway/config.d/*
+include config.d/*
 
 
 bar {
-    status_command i3status
+    status_command i3status-rs
+    position bottom
     mode dock
+
+    # Tipografía moderna para la barra
+    font pango:Inter ExtraBold 8
+
+    # Separador estilizado
+    # separator_symbol " | "
+
+    colors {
+        # Fondo y texto general de la barra
+        background         $bg0
+        statusline         $fg1
+        separator          $bg3
+
+        # Workspaces:          borde     fondo     texto
+        focused_workspace      $borange  $borange  $bg0
+        active_workspace       $bg2      $bg2      $fg1
+        inactive_workspace     $bg0      $bg0      $fg4
+        urgent_workspace       $bred     $bred     $fg0
+        binding_mode           $bred     $bred     $fg0
+    }
 }

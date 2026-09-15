@@ -1,9 +1,5 @@
 #
 # ~/.bash_profile
 #
-#if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
-#    exec xinit "$HOME/.xinitrc" -- /usr/bin/Xorg :0 vt1 -keeptty -nolisten tcp
-#fi
-if [ -f ~/.bashrc ]; then
-    . ~/.bashrc
-fi
+
+export PATH="$HOME/.local/bin:$PATH"

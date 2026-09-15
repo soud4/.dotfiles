@@ -1,0 +1,76 @@
+
+[theme]
+theme = "plain"
+
+[theme.overrides]
+idle_bg = "#282828"
+idle_fg = "#ebdbb2"
+good_bg = "#282828"
+good_fg = "#b8bb26"
+warning_bg = "#282828"
+warning_fg = "#fabd2f"
+critical_bg = "#282828"
+critical_fg = "#fb4934"
+separator = " | "
+separator_bg = "#282828"
+separator_fg = "#504945"
+
+[[block]]
+block = "sound"
+format = " VOL [$volume.eng(hide_unit:true)] |VOL: [MUTED] "
+click = [
+    { button = "left", cmd = "pactl set-sink-mute @DEFAULT_SINK@ toggle" }
+]
+
+[[block]]
+block = "sound"
+driver = "pulseaudio"
+device_kind = "source"
+format = " MIC [$volume.eng(hide_unit:true)]|MIC [MUTED] "
+click = [
+    { button = "left", cmd = "pactl set-source-mute @DEFAULT_SOURCE@ toggle" }
+]
+
+
+[[block]]
+block = "backlight"
+format = "LIGHT [$brightness.eng(hide_unit:true)]"
+minimum = 5
+maximum = 75
+
+[[block]]
+block = "disk_space"
+path = "/"
+format = "SSD [$available.eng(hide_unit:true, hide_prefix:true)]"
+warning = 10.0
+alert = 5.0
+
+[[block]]
+block = "net"
+device = "wlan0"
+format = "WIFI [$ssid]"
+inactive_format = "WIFI [DISCONNECT]" 
+
+[[block]]
+block = "net"
+device = "enp3s0"
+format = "ETH [$ip]"
+inactive_format = "ETH [DISCONNECT]" 
+
+[[block]]
+block = "memory"
+format = " RAM [$mem_used.eng(p:G, w:4, hide_prefix:true, hide_unit:true)]"
+
+[[block]]
+block = "battery"
+format = "DISCHARGING [$percentage.eng(hide_unit:true)]" 
+charging_format = "CHARGING [$percentage.eng(hide_unit:true)] "
+not_charging_format = "DISCHARGING [$percentage.eng(hide_unit:true)]"
+full_format = "[CHARGED]"
+missing_format = "[NOT FOUND]"
+interval = 60
+
+[[block]]
+block = "time"
+format = "TIME [$timestamp.datetime(f:'%H:%M')]"
+interval = 60

@@ -66,5 +66,12 @@ Laboratory/
 .config/cmus/**
 .config/sway/wall.jpg
 .config/sway/wallpaper.jpg
+.config/TeraBox/
+.config/terabox/
+.config/i3status/
+.config/dconf/user
+.config/mimeapps.list
+
+
 
 

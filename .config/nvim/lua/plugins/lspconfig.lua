@@ -40,6 +40,7 @@ return {
           "lua_ls",                -- Lua
           "bashls",                -- Bash / Shell Scripts
           "emmet_language_server", -- Expansión Emmet para HTML / PHP / JSX
+          "pyright",               -- Python
         },
         automatic_installation = true,
       })
@@ -217,6 +218,21 @@ return {
         bashls = {
           capabilities = capabilities,
           filetypes = { "sh", "bash", "zsh" },
+        },
+
+        -- Python (Pyright)
+        pyright = {
+          capabilities = capabilities,
+          filetypes = { "python" },
+          settings = {
+            python = {
+              analysis = {
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = "openFilesOnly",
+              },
+            },
+          },
         },
       }
 

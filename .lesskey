@@ -1,0 +1,7 @@
+#command
+j forw-line
+k back-line
+q quit
+
+#env
+LESSHISTFILE = /dev/null
