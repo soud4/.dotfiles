@@ -25,9 +25,8 @@ set $term foot
 # FUENTE
 ###############################################################################
 
-#font pango:TeX Gyre Heros Bold 9
-#font pango:MonaspiceNe NFP ExtraBold 9
 font pango:Inter ExtraBold 8
+
 ###############################################################################
 # APARIENCIA DE VENTANAS
 ###############################################################################
@@ -37,9 +36,7 @@ default_border          pixel 1
 default_floating_border pixel 1
 
 # Padding interno del titlebar: horizontal x vertical
-titlebar_padding 4 1
-
-
+titlebar_padding 1 1
 
 ###############################################################################
 # INPUT — TECLADO
@@ -51,10 +48,8 @@ input type:keyboard xkb_numlock enabled
 input type:keyboard {
     xkb_layout latam
     xkb_model  pc105
-
-    # Tiempo antes de que empiece a repetir (ms) y velocidad (chars/seg)
     repeat_delay 300
-    repeat_rate  50
+    repeat_rate  40
 }
 
 
@@ -62,32 +57,30 @@ input type:keyboard {
 # INPUT — TOUCHPAD
 ###############################################################################
 
-# Para obtener el ID de tu dispositivo: swaymsg -t get_inputs
-input "1267:12871:ELAN06FA:00_04F3:3247_Touchpad" {
+set $touchpad 1267:12871:ELAN06FA:00_04F3:3247_Touchpad
+
+input $touchpad {
     # Tap con uno/dos/tres dedos
     tap       enabled
     drag      enabled
     drag_lock disabled
 
-    # Scroll natural (mismo sentido que en móvil)
     natural_scroll enabled
 
-    # Deshabilitar mientras se escribe y mientras se usa el trackpoint
     dwt  enabled
     dwtp enabled
 
-    # flat = sin aceleración adaptativa (movimiento más predecible)
     accel_profile flat
     pointer_accel -0.1
 
-    # 1 dedo = clic izq | 2 dedos = clic der | 3 dedos = clic medio
     click_method   clickfinger
     tap_button_map lrm
 
-    middle_emulation enabled
-    scroll_method    two_finger
-}
+    scroll_method two_finger
 
+    # Estado inicial
+    events disabled_on_external_mouse
+}
 
 ###############################################################################
 # ASIENTO (SEAT)
@@ -105,6 +98,9 @@ seat seat0 {
 
 # Abrir terminal
 bindsym $mod+Return exec $term
+bindsym $mod+Shift+Return exec foot --title scratch-terminal
+
+
 
 # Cerrar ventana enfocada
 bindsym $mod+Shift+q kill
@@ -126,31 +122,30 @@ bindsym $mod+Shift+e exec swaynag -t warning \
 # ATAJOS — APLICACIONES
 ###############################################################################
 
-# Abrir navegador
-bindsym $mod+Shift+b exec /usr/bin/thorium-browser
+set $browser /usr/bin/librewolf
+
+
 
 # Definir wmenu con estilo personalizado
 set $menubin wmenu-run -i \
-    -f "MonaspiceNe NFP Bold 9" \
-    -p "RUN" \
-    -N 181818 -n b0b0b0 \
-    -M 303030 -m ffffff \
-    -S ffffff -s 111111
+    -f "Inter ExtraBold 8" \
+    -p " RUN " \
+    -N 1d2021 -n ebdbb2 \
+    -M 3c3836 -m fabd2f \
+    -S 504945 -s fbf1c7
 
 set $menuapp wmenu-drun
 
 
-bindsym $mod+d exec $menuapp
-bindsym $mod+Shift+p exec $menu
+bindsym $mod+d          exec $menuapp
+bindsym $mod+Shift+p    exec $menubin
+bindsym $mod+Shift+b    exec $browser
+
 
 # Scratchpad terminal: toggle mostrar/ocultar con $mod+` (tecla grave/tilde)
 # Se inicia automáticamente al arrancar sway (ver sección AUTOSTART)
 bindsym $mod+grave [title="scratch-terminal"] scratchpad show
 
-# Descomenta la línea de tu gestor de archivos preferido:
-# bindsym $mod+Shift+f exec thunar
-# bindsym $mod+Shift+f exec nautilus
-# bindsym $mod+Shift+f exec pcmanfm
 
 
 ###############################################################################
@@ -377,12 +372,11 @@ for_window [app_id="librewolf"] saturation set 5
 # Se crea al iniciar sway (ver AUTOSTART), aquí se configura su aspecto
 for_window [title="scratch-terminal"] {
     floating enable
+    border pixel 2
+    resize set width 90 ppt height 80 ppt
     move position center
-    resize set width 1600 px height 900 px
     move scratchpad
-    border 1
 }
-
 
 ###############################################################################
 # AUTOSTART

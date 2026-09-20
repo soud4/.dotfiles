@@ -71,7 +71,7 @@ Laboratory/
 .config/i3status/
 .config/dconf/user
 .config/mimeapps.list
-
+.config/etc/**
 
 
 

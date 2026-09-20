@@ -48,7 +48,7 @@ alert = 5.0
 [[block]]
 block = "net"
 device = "wlan0"
-format = "WIFI [$ssid]"
+format = "WIFI [$ip]"
 inactive_format = "WIFI [DISCONNECT]" 
 
 [[block]]
