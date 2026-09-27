@@ -75,3 +75,13 @@ Laboratory/
 
 
 
+
+# Backups & temporary
+*.bak
+*.bak.*
+*~
+
+# Security & Secrets prevention
+*password*
+*.key
+*.pem
