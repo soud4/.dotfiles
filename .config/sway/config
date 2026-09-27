@@ -315,18 +315,21 @@ bindsym --locked XF86AudioStop  exec playerctl stop
 # Print                → Captura la pantalla completa al portapapeles
 # $mod+Print           → Captura una región seleccionada al portapapeles
 # $mod+Shift+Print     → Captura el color de un píxel (eyedropper) al portapapeles
-
+set $screenshot_dir ~/Pictures/Screenshots
+# Screenshot completo -> guarda en archivo
 bindsym Print exec \
-    grim - | wl-copy
+    mkdir -p $screenshot_dir && \
+    grim $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png
 
+# Screenshot de región seleccionada -> guarda en archivo
 bindsym $mod+Print exec \
-    grim -g "$(slurp)" - | wl-copy
+    mkdir -p $screenshot_dir && \
+    grim -g "$(slurp)" $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png
 
+# Screenshot de región + copia a portapapeles (ambas cosas)
 bindsym $mod+Shift+Print exec \
-    grim -g "$(slurp -p)" -t ppm - \
-    | convert - -format "%[pixel:p{0,0}]" txt:- \
-    | tail -n 1 | cut -d " " -f 4 | wl-copy
-
+    mkdir -p $screenshot_dir && \
+    grim -g "$(slurp)" - | tee $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png | wl-copy
 
 ###############################################################################
 # REGLAS DE VENTANAS (for_window)
