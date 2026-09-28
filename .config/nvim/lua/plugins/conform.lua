@@ -13,8 +13,8 @@ return {
       function()
         -- Formatea el buffer actual o la selección visual
         require("conform").format({
-          async = true,        -- Ejecución asíncrona para no congelar la interfaz
-          lsp_fallback = true, -- Si no hay formateador externo (ej. prettier), usa el LSP
+          async = true,               -- Ejecución asíncrona para no congelar la interfaz
+          lsp_format = "fallback",    -- Si no hay formateador externo (ej. prettier), usa el LSP
         })
       end,
       mode = { "n", "v" },
@@ -22,6 +22,19 @@ return {
     },
   },
   opts = {
+    -- -------------------------------------------------------------------------
+    -- FORMATO AL GUARDAR, con interruptor global vim.g.formato_al_guardar.
+    -- Se apaga con <leader>tf (ver core/keymaps.lua) — útil cuando un CLI como
+    -- Claude está editando el mismo archivo desde otro panel de tmux y no
+    -- quieres que nvim reformatee encima de sus cambios.
+    -- -------------------------------------------------------------------------
+    format_on_save = function(bufnr)
+      if vim.g.formato_al_guardar == false then
+        return nil
+      end
+      return { timeout_ms = 1000, lsp_format = "fallback" }
+    end,
+
     -- -------------------------------------------------------------------------
     -- ASIGNACIÓN DE FORMATEADORES POR TIPO DE ARCHIVO
     -- stop_after_first = true ejecuta el primer formateador disponible en el sistema.

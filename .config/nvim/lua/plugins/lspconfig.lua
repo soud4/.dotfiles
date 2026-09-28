@@ -42,7 +42,10 @@ return {
           "emmet_language_server", -- Expansión Emmet para HTML / PHP / JSX
           "pyright",               -- Python
         },
-        automatic_installation = true,
+        -- Desactivado a propósito: el bucle del final de este archivo ya hace
+        -- vim.lsp.config() + vim.lsp.enable() con filetypes propios por servidor.
+        -- (En mason-lspconfig v2 la opción es 'automatic_enable', no 'automatic_installation'.)
+        automatic_enable = false,
       })
 
       -- -----------------------------------------------------------------------
@@ -83,34 +86,81 @@ return {
           vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, { desc = "LSP: Acciones de código" }))
 
           -- Navegación de errores y diagnósticos
+          -- (vim.diagnostic.jump reemplaza a goto_prev/goto_next, deprecados desde nvim 0.11)
           vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, vim.tbl_extend("force", opts, { desc = "LSP: Ver diagnóstico actual" }))
-          vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, vim.tbl_extend("force", opts, { desc = "LSP: Diagnóstico anterior" }))
-          vim.keymap.set("n", "]d", vim.diagnostic.goto_next, vim.tbl_extend("force", opts, { desc = "LSP: Diagnóstico siguiente" }))
+          vim.keymap.set("n", "[d", function()
+            vim.diagnostic.jump({ count = -1, float = true })
+          end, vim.tbl_extend("force", opts, { desc = "LSP: Diagnóstico anterior" }))
+          vim.keymap.set("n", "]d", function()
+            vim.diagnostic.jump({ count = 1, float = true })
+          end, vim.tbl_extend("force", opts, { desc = "LSP: Diagnóstico siguiente" }))
+
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if not client then
+            return
+          end
+
+          -- -------------------------------------------------------------------
+          -- INLAY HINTS: tipos inferidos y nombres de parámetros en gris.
+          -- Se apagan con <leader>th (ver core/keymaps.lua).
+          -- -------------------------------------------------------------------
+          if client:supports_method("textDocument/inlayHint") then
+            vim.lsp.inlay_hint.enable(true, { bufnr = buf })
+          end
+
+          -- -------------------------------------------------------------------
+          -- DOCUMENT HIGHLIGHT: resalta las demás ocurrencias del símbolo bajo
+          -- el cursor al detenerse. Sin ventanas ni paneles, sólo resaltado.
+          -- -------------------------------------------------------------------
+          if client:supports_method("textDocument/documentHighlight") then
+            local grupo = vim.api.nvim_create_augroup("UserLspHighlight" .. buf, { clear = true })
+            vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+              buffer = buf,
+              group = grupo,
+              callback = vim.lsp.buf.document_highlight,
+            })
+            vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+              buffer = buf,
+              group = grupo,
+              callback = vim.lsp.buf.clear_references,
+            })
+            -- Limpiar el grupo al desconectarse el servidor para no dejar autocmds huérfanos
+            vim.api.nvim_create_autocmd("LspDetach", {
+              buffer = buf,
+              once = true,
+              callback = function()
+                pcall(vim.api.nvim_del_augroup_by_name, "UserLspHighlight" .. buf)
+              end,
+            })
+          end
         end,
       })
 
       -- -----------------------------------------------------------------------
-      -- 4. APARIENCIA DE DIAGNÓSTICOS Y VENTANAS FLOTANTES (Cuadradas)
+      -- 4. APARIENCIA DE DIAGNÓSTICOS
+      -- Los bordes de las flotantes los da 'winborder' en core/options.lua,
+      -- que sustituye a los vim.lsp.handlers + vim.lsp.with() ya deprecados.
       -- -----------------------------------------------------------------------
       vim.diagnostic.config({
-        virtual_text = { prefix = "●" }, -- Texto inline en la misma línea
-        signs = true,                    -- Iconos en la columna izquierda
-        underline = true,                -- Subrayado de errores
-        update_in_insert = false,        -- No molestar con errores mientras escribes
-        severity_sort = true,            -- Priorizar errores graves primero
+        -- En vez de ensuciar cada línea con texto a la derecha, el mensaje se
+        -- despliega debajo sólo en la línea del cursor y desaparece al moverse.
+        virtual_text = false,
+        virtual_lines = { current_line = true },
+        underline = true,         -- Subrayado de errores
+        update_in_insert = false, -- No molestar con errores mientras escribes
+        severity_sort = true,     -- Priorizar errores graves primero
+        signs = {
+          text = {
+            [vim.diagnostic.severity.ERROR] = " ", -- mismos iconos que usa lualine
+            [vim.diagnostic.severity.WARN] = " ",
+            [vim.diagnostic.severity.INFO] = " ",
+            [vim.diagnostic.severity.HINT] = " ",
+          },
+        },
         float = {
-          border = "single",             -- Marco cuadrado para la ventana de diagnósticos
           focusable = false,
         },
       })
-
-      -- Configurar bordes cuadrados para las ventanas flotantes nativas de LSP (Hover y Signature)
-      vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-        vim.lsp.handlers.hover, { border = "single" }
-      )
-      vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-        vim.lsp.handlers.signature_help, { border = "single" }
-      )
 
       -- -----------------------------------------------------------------------
       -- 5. CONFIGURACIÓN INDIVIDUAL DE CADA SERVIDOR LSP
@@ -137,6 +187,32 @@ return {
             "typescript",
             "typescriptreact",
             "typescript.tsx",
+          },
+          settings = {
+            -- Inlay hints: tipos inferidos y nombres de parámetros (se ven en gris).
+            -- ts_ls los pide por separado para JS y para TS.
+            javascript = {
+              inlayHints = {
+                includeInlayParameterNameHints = "literals",
+                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                includeInlayFunctionParameterTypeHints = true,
+                includeInlayVariableTypeHints = false,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayEnumMemberValueHints = true,
+              },
+            },
+            typescript = {
+              inlayHints = {
+                includeInlayParameterNameHints = "literals",
+                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                includeInlayFunctionParameterTypeHints = true,
+                includeInlayVariableTypeHints = false,
+                includeInlayPropertyDeclarationTypeHints = true,
+                includeInlayFunctionLikeReturnTypeHints = true,
+                includeInlayEnumMemberValueHints = true,
+              },
+            },
           },
         },
 
@@ -205,6 +281,8 @@ return {
               diagnostics = {
                 globals = { "vim" }, -- Evita advertencias sobre la variable global 'vim'
               },
+              hint = { enable = true }, -- Inlay hints: tipos y nombres de parámetros
+
               workspace = {
                 library = vim.api.nvim_get_runtime_file("", true),
                 checkThirdParty = false,

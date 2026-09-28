@@ -26,9 +26,12 @@ opt.inccommand = "split" -- vista previa en vivo al reemplazar texto (:%s/a/b/g)
 -- Divisiones de ventana
 opt.splitright = true -- nuevas ventanas verticales a la derecha
 opt.splitbelow = true -- nuevas ventanas horizontales abajo
+opt.splitkeep = "screen" -- el texto no salta al abrir o cerrar un split
 
 -- Archivos e historial
 opt.undofile = true -- usar historial persistente (deshacer tras reiniciar)
+opt.autoread = true -- recargar archivos modificados fuera de nvim (ver autocmds.lua)
+opt.confirm = true -- preguntar en vez de fallar al salir con cambios sin guardar
 
 -- Experiencia de usuario y rendimiento
 opt.updatetime = 250 -- reduce lag para eventos como diagnósticos y CursorHold
@@ -42,6 +45,7 @@ opt.clipboard = "unnamedplus" -- sincronizar con el portapapeles del sistema
 opt.showmode = false -- no mostrar -- INSERT -- (lo muestra lualine)
 opt.cmdheight = 0 -- ocultar la línea de comandos cuando no se use
 opt.laststatus = 3 -- una sola barra de estado global
+opt.winborder = "single" -- marco único para TODAS las ventanas flotantes (hover, diagnósticos...)
 
 -- Plegado de código con Treesitter
 opt.foldmethod = "expr"

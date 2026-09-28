@@ -42,3 +42,29 @@ autocmd("FileType", {
 	end,
 })
 
+-- 4. Detectar cambios hechos fuera de nvim (ej. Claude editando desde otro panel de tmux).
+--    'autoread' por sí solo no basta: nvim sólo mira el disco cuando se lo pides con :checktime.
+autocmd({ "FocusGained", "TermClose", "TermLeave", "BufEnter", "CursorHold" }, {
+	desc = "Recargar el buffer si el archivo cambió en disco",
+	group = augroup("AutoRecargar", { clear = true }),
+	callback = function()
+		-- Sólo buffers de archivo real, y nunca mientras se escribe un comando
+		if vim.bo.buftype == "" and vim.fn.mode() ~= "c" then
+			-- vim.schedule es imprescindible: nvim aplaza un :checktime lanzado
+			-- desde dentro de un autocmd y el buffer nunca llega a recargarse.
+			vim.schedule(function()
+				pcall(vim.cmd.checktime)
+			end)
+		end
+	end,
+})
+
+-- 5. Avisar cuando un archivo se recargó solo, para no perder de vista el cambio
+autocmd("FileChangedShellPost", {
+	desc = "Notificar recarga externa",
+	group = augroup("AvisoRecarga", { clear = true }),
+	callback = function()
+		vim.notify("Archivo recargado desde disco", vim.log.levels.WARN)
+	end,
+})
+

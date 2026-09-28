@@ -67,25 +67,39 @@ return {
       }
 
       -- =======================================================================
-      -- 2. HIGHLIGHTS / COLORES PARA EL ESTADO CUADRADO (Atom Style)
-      -- Define colores distintivos para cada tipo de ítem de autocompletado.
+      -- 2. HIGHLIGHTS DEL MENÚ DE AUTOCOMPLETADO
+      -- Se enlazan a los grupos de Treesitter en vez de fijar colores a mano,
+      -- para que el menú herede siempre la paleta del colorscheme activo.
+      -- Antes había hex de tokyonight dentro de una config gruvbox.
       -- =======================================================================
-      local set_hl = vim.api.nvim_set_hl
-      set_hl(0, "CmpItemKindFunction", { fg = "#7aa2f7", bold = true })
-      set_hl(0, "CmpItemKindMethod", { fg = "#7aa2f7", bold = true })
-      set_hl(0, "CmpItemKindVariable", { fg = "#e0af68" })
-      set_hl(0, "CmpItemKindKeyword", { fg = "#bb9af7", bold = true })
-      set_hl(0, "CmpItemKindSnippet", { fg = "#f7768e", bold = true })
-      set_hl(0, "CmpItemKindClass", { fg = "#ff9e64" })
-      set_hl(0, "CmpItemKindInterface", { fg = "#0db9d7" })
-      set_hl(0, "CmpItemKindStruct", { fg = "#0db9d7" })
-      set_hl(0, "CmpItemKindProperty", { fg = "#73daca" })
-      set_hl(0, "CmpItemKindField", { fg = "#73daca" })
-      set_hl(0, "CmpItemKindModule", { fg = "#ff9e64" })
-      set_hl(0, "CmpItemKindFile", { fg = "#7aa2f7" })
-      set_hl(0, "CmpItemKindFolder", { fg = "#e0af68" })
-      set_hl(0, "CmpItemAbbrMatch", { fg = "#2ac3de", bold = true })
-      set_hl(0, "CmpItemAbbrMatchFuzzy", { fg = "#2ac3de", underline = true })
+      local function aplicar_highlights()
+        local link = function(desde, hacia)
+          vim.api.nvim_set_hl(0, desde, { link = hacia, default = false })
+        end
+        link("CmpItemKindFunction", "@function")
+        link("CmpItemKindMethod", "@function.method")
+        link("CmpItemKindVariable", "@variable")
+        link("CmpItemKindKeyword", "@keyword")
+        link("CmpItemKindSnippet", "@string")
+        link("CmpItemKindClass", "@type")
+        link("CmpItemKindInterface", "@type")
+        link("CmpItemKindStruct", "@type")
+        link("CmpItemKindProperty", "@property")
+        link("CmpItemKindField", "@variable.member")
+        link("CmpItemKindModule", "@module")
+        link("CmpItemKindFile", "Directory")
+        link("CmpItemKindFolder", "Directory")
+        link("CmpItemAbbrMatch", "@keyword")
+        link("CmpItemAbbrMatchFuzzy", "@keyword")
+      end
+
+      aplicar_highlights()
+
+      -- Reaplicar al cambiar de colorscheme, que resetea todos los grupos
+      vim.api.nvim_create_autocmd("ColorScheme", {
+        group = vim.api.nvim_create_augroup("CmpHighlights", { clear = true }),
+        callback = aplicar_highlights,
+      })
 
       -- =======================================================================
       -- 3. CONFIGURACIÓN PRINCIPAL DE CMP
