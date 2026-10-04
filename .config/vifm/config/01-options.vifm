@@ -1,0 +1,115 @@
+" =============================================================================
+" 01-options.vifm -- core behaviour and minimalist TUI
+" =============================================================================
+
+" ----------------------------------------------------------------- external
+" nvim is the only editor present on this system (there is no `vim`).
+" vixcmd takes precedence inside a graphical environment; keep both on nvim
+" so behaviour does not change between a TTY and a Wayland session.
+if executable('nvim')
+    set vicmd=nvim
+    set vixcmd=nvim
+elseif $EDITOR != ''
+    let &vicmd = $EDITOR
+endif
+
+" Use OS syscalls for file operations instead of shelling out to cp/mv.
+" Gives progress reporting and correct handling of odd file names.
+set syscalls
+
+" ---------------------------------------------------------------- minimal UI
+" tuioptions flags:  p = one-char padding inside panes and preview
+"                    u = Unicode ellipsis instead of "..."
+" Dropped from the default "psv":
+"   s = left/right outer borders  -> removed, the screen edge is border enough
+"   v = varying middle border width -> removed, keeps the split stable
+set tuioptions=pu
+
+" A thin middle border, and no horizontal rule at all (empty hborder omits it).
+set fillchars=vborder:│,hborder:
+
+" No line numbers in either pane.
+set nonumber
+set norelativenumber
+
+" Tilde-shorten paths in view titles, truncate long status messages in the
+" middle, and show only the last directory component in the tab line.
+set shortmess=pTL
+
+" Tabs belong to a pane rather than to the whole UI, and the tab line only
+" appears once a second tab exists.
+set tabscope=pane
+set showtabline=multiple
+
+" Human-readable sizes (1.44 MiB) and a compact date (02 Oct 16:25).
+set sizefmt=units:iec,precision:2,space
+set timefmt=%d\ %b\ %H:%M
+
+" Always offer "../" so `l` can walk upwards as well as into directories.
+set dotdirs=rootparent,nonrootparent,treeleafsparent
+
+" Keep a few lines of context when scrolling.
+set scrolloff=3
+
+" ------------------------------------------------------------------ sorting
+" Directories first, then grouped by extension, then case-insensitive name.
+set sortgroups=.*\.([^.]+)$
+set sort=+dir,+iname
+set sortnumbers
+
+" ----------------------------------------------------------------- searching
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+
+" ripgrep for :grep. %i marks where "-v" goes when results are inverted.
+if executable('rg')
+    set grepprg=rg\ --line-number\ --no-heading\ --color=never\ --smart-case\ %i\ %a\ %s
+endif
+
+" fd for :find. %p carries the escaped pattern, %s the paths to search.
+if executable('fd')
+    set findprg=fd\ --hidden\ --follow\ --color=never\ %p\ %s
+elseif system("find --version | grep -c 'GNU findutils'") != 0
+    set findprg='find %s %a -print , -type d \( ! -readable -o ! -executable \) -prune'
+endif
+
+" -------------------------------------------------------------------- safety
+" Trash per filesystem (%r = mount point) with the XDG trash as a fallback,
+" so trash-cli (`trash-list`, `trash-restore`) sees the same files.
+set trash
+set trashdir=%r/.vifm-trash,~/.local/share/Trash/files
+
+" Ask before trashing and before deleting for good.
+set confirm=delete,permdelete
+
+" Generous undo history; file operations are undoable with `u`.
+set undolevels=1000
+
+" Never run a file just because it is executable -- `l` opens, it never execs.
+set norunexec
+
+" Do not follow symlinks into their target directory on `l`.
+set nofollowlinks
+
+" ------------------------------------------------------------------- history
+set history=1000
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,ehistory,phistory,
+            \fhistory,dirstack,registers,bookmarks,bmarks,mchistory,tabs
+
+" -------------------------------------------------------------- command line
+set wildmenu
+set wildstyle=popup
+set suggestoptions=normal,visual,view,otherpane,keys,marks,registers
+set vimhelp
+
+" Avoid blocking the UI while stat()ing network mounts.
+set slowfs=curlftpfs,sshfs,nfs,cifs,davfs
+
+" Removable media handling, only if a helper is actually installed.
+if executable('udevil')
+    set mediaprg=udevil
+elseif executable('udisksctl')
+    set mediaprg=udisksctl
+endif

@@ -1,0 +1,90 @@
+# ~/.config/imv/config — tema Gruvbox Dark
+# man 5 imv  |  variables disponibles: $imv_current_file $imv_current_index
+# $imv_file_count $imv_width $imv_height $imv_scale $imv_scaling_mode
+# $imv_slideshow_duration $imv_slideshow_elapsed $imv_pid
+
+[options]
+# --- Apariencia (gruvbox dark) ---
+background = 282828
+overlay_font = MonaspiceNe Nerd Font Mono:13
+overlay_text_color = ebdbb2
+overlay_text_alpha = ff
+overlay_background_color = 1d2021
+overlay_background_alpha = d8
+overlay_position_bottom = true
+
+# --- Overlay siempre visible: carpeta, posición, nombre, tamaño y zoom ---
+overlay = false
+overlay_text = "$("$HOME/.config/imv/overlay.sh" "$imv_current_file" "$imv_current_index" "$imv_file_count" "$imv_scale")"
+
+# Título de la ventana (útil con tiling WMs / barras)
+title_text = imv · $imv_current_index/$imv_file_count · $(basename "$imv_current_file")
+
+# --- Comportamiento ---
+scaling_mode = shrink
+upscaling_method = nearest_neighbour
+loop_input = true
+recursive = false
+width = 1400
+height = 900
+suppress_default_binds = false
+
+[aliases]
+trash = exec gio trash "$imv_current_file" && notify-send -t 1500 "imv" "A la papelera: $(basename "$imv_current_file")"
+yank = exec printf '%s' "$imv_current_file" | wl-copy && notify-send -t 1200 "imv" "Ruta copiada"
+yankimg = exec wl-copy < "$imv_current_file" && notify-send -t 1200 "imv" "Imagen copiada"
+info = exec notify-send "$(basename "$imv_current_file")" "$(identify -format '%wx%h · %m · %[size]B' "$imv_current_file[0]")\n$imv_current_file"
+reveal = exec xdg-open "$(dirname "$imv_current_file")"
+
+[binds]
+# --- Navegación (vim-like) ---
+<Ctrl+d> = next 10
+<Ctrl+u> = prev 10
+<Ctrl+f> = next 25
+<Ctrl+b> = prev 25
+gg = goto 1
+<Shift+G> = goto -1
+<Home> = goto 1
+<End> = goto -1
+
+# --- Zoom / encuadre ---
+<equal> = zoom 1
+<minus> = zoom -1
+<Ctrl+0> = zoom actual
+0 = zoom actual
+<space> = next
+<BackSpace> = prev
+c = center
+<Shift+R> = reset
+
+# --- Rotar / voltear ---
+<Shift+L> = rotate by 90
+<Shift+H> = rotate by -90
+<Shift+V> = flip vertical
+<Shift+F> = flip horizontal
+
+# --- Vista ---
+f = fullscreen
+d = overlay
+i = overlay
+s = scaling next
+<Shift+S> = upscaling next
+b = background checks
+<Shift+B> = background 282828
+
+# --- Slideshow ---
+t = slideshow +1
+<Shift+T> = slideshow -1
+<Ctrl+space> = slideshow 0
+
+# --- Archivos ---
+y = yank
+<Shift+Y> = yankimg
+<Ctrl+i> = info
+<Ctrl+e> = reveal
+<Delete> = trash; next
+x = close
+o = exec xdg-open "$imv_current_file"
+
+q = quit
+<Ctrl+q> = quit

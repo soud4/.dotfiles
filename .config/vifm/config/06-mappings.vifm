@@ -1,0 +1,124 @@
+" =============================================================================
+" 06-mappings.vifm -- key bindings.  Leader is ","
+" =============================================================================
+"
+" Native bindings that already do the job are deliberately NOT remapped:
+"   gg gh gl gt gT    first line / up a dir / open / next tab / prev tab
+"   ga gA             calculate directory size (gA forces a refresh)
+"   gf gF gv          follow link / resolve link chain / restore selection
+"   t                 tag (select) the file under the cursor
+"   cw cW             rename; with several files selected cw IS the bulk rename
+"   za zo zm          toggle / show / hide dot files
+"   zf zO zR zr zM    permanent and local filters
+"   Ctrl-O Ctrl-I     walk the directory history backwards / forwards
+"   ga u              undo is `u`, redo is Ctrl-R
+" Run :map to list everything that is bound at any time.
+
+" ------------------------------------------------------------------ selection
+" ranger-style: Space tags the file and steps down, so a run of files can be
+" picked with one hand. Space natively switches panes, so that moves to Tab
+" (the explicit mapping below wins over 'cpoptions' t). The cost of this trade
+" is that Ctrl-I no longer steps forward through history -- Ctrl-O still steps
+" back, and :history dir (,fh) shows the whole list.
+nnoremap <space> tj
+nnoremap <tab> <c-w>w
+
+" Invert the selection; ,, clears both the selection and the search highlight
+" (:nohlsearch is vifm's own command for that, despite the name).
+nnoremap <c-a> :invert s<cr>
+nnoremap ,, :nohlsearch<cr>
+
+" ------------------------------------------------------------------- the panes
+" Keep the two panes in sync while browsing, and mirror the current location.
+nnoremap <a-i> :sync<cr>
+nnoremap <a-o> :sync %c<cr>
+nnoremap ,o :sync! location,filters,cursorpos<cr>
+
+" -------------------------------------------------------------------- previews
+" w toggles the preview pane (zp is the same thing, for z-prefix muscle memory).
+nnoremap w :view<cr>
+vnoremap w :view<cr>gv
+nnoremap zp :view<cr>
+nnoremap ,w :set wrap!<cr>
+
+" ---------------------------------------------------------------- view columns
+" Cycle name -> name+size -> name+size+mtime. The mtime column is worth having
+" on a wide screen and actively harmful on a narrow pane, hence a toggle rather
+" than a fixed choice. 'viewcolumns' is local, so every branch uses :windo.
+let g:vcA = '-{name}..'
+let g:vcB = '-{name}..,8{size}'
+let g:vcC = '-{name}..,8{size},16{mtime}'
+nnoremap ,v :if &viewcolumns == g:vcB
+          \ | execute 'windo set viewcolumns='''.g:vcC.''''
+          \ | elseif &viewcolumns == g:vcC
+          \ | execute 'windo set viewcolumns='''.g:vcA.''''
+          \ | else
+          \ | execute 'windo set viewcolumns='''.g:vcB.''''
+          \ | endif<cr>
+
+" ----------------------------------------------------------------------- icons
+" g:icons is captured in 02-ui.vifm right after 'classify' is built, so this
+" toggle does not have to repeat the whole icon table.
+nnoremap zi :if &classify == ''
+          \ | execute 'set classify='''.g:icons.''''
+          \ | else
+          \ | set classify=
+          \ | endif<cr>
+
+" ------------------------------------------------------------------- renaming
+nnoremap ,r :rename<cr>
+nnoremap I cw<c-a>
+nnoremap cc cw<c-u>
+nnoremap A cw
+
+" ------------------------------------------------------------------ operations
+nnoremap ,d :du<cr>
+nnoremap ,x :chmodx<cr>
+nnoremap ,X :extract<cr>
+nnoremap ,Z :compress<space>
+nnoremap ,k :mkcd<space>
+nnoremap S :sort<cr>
+nnoremap s :shell<cr>
+
+" ----------------------------------------------------------------------- fzf
+nnoremap ,ff :ff<cr>
+nnoremap ,fd :fd<cr>
+nnoremap ,fg :fg<space>
+" Native equivalents of the two remaining pickers -- no fzf needed.
+nnoremap ,fh :history dir<cr>
+nnoremap ,fz :bmarks<cr>
+
+" ------------------------------------------------------------------- clipboard
+" Wayland is checked FIRST on purpose. This session has both $WAYLAND_DISPLAY
+" and $DISPLAY set (XWayland), and the stock sample config tested $DISPLAY
+" first, which meant it used xclip and copied into the wrong clipboard.
+if $WAYLAND_DISPLAY != '' && executable('wl-copy')
+    nnoremap yf :!echo -n %c:p | wl-copy %i<cr>
+    nnoremap yd :!echo -n %d | wl-copy %i<cr>
+    nnoremap yn :!echo -n %c | wl-copy %i<cr>
+elseif $DISPLAY != '' && executable('xclip')
+    nnoremap yf :!echo -n %c:p | xclip -selection clipboard %i<cr>
+    nnoremap yd :!echo -n %d | xclip -selection clipboard %i<cr>
+    nnoremap yn :!echo -n %c | xclip -selection clipboard %i<cr>
+endif
+
+" -------------------------------------------------------------------- terminal
+if executable('foot')
+    nnoremap ,t :!foot &<cr>
+elseif $TERMINAL != ''
+    nnoremap ,t :!$TERMINAL &<cr>
+endif
+
+" ---------------------------------------------------------------------- config
+nnoremap ,c :write | edit $MYVIFMRC | restart full<cr>
+nnoremap ,C :cfgdir<cr>
+
+" -------------------------------------------------------------- function keys
+" Kept from the sample config: a discoverable fallback for the vim bindings.
+nnoremap <f1> :help<cr>
+nnoremap <f3> :!less %f<cr>
+nnoremap <f4> :edit<cr>
+nnoremap <f5> :copy<cr>
+nnoremap <f6> :move<cr>
+nnoremap <f7> :mkdir<space>
+nnoremap <f8> :delete<cr>

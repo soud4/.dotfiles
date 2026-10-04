@@ -107,11 +107,31 @@ return {
       configs = require("nvim-treesitter.config")
     end
 
+    -- `auto_install` compiles a parser from the FileType event. A handful of
+    -- grammars (latex, swift, teal, ...) must first be regenerated with the
+    -- tree-sitter CLI; when that binary is not on PATH the installer aborts
+    -- with an error raised inside the autocommand, which Neovim reports as
+    -- "Error in BufReadPost Autocommands". Opt those grammars out instead, so
+    -- the buffer just falls back to regex syntax.
+    local ignore_install = {}
+    if vim.fn.executable("tree-sitter") ~= 1 then
+      local ok_parsers, parsers = pcall(require, "nvim-treesitter.parsers")
+      if ok_parsers and parsers.get_parser_configs then
+        for lang, info in pairs(parsers.get_parser_configs()) do
+          if info.install_info and info.install_info.requires_generate_from_grammar then
+            table.insert(ignore_install, lang)
+          end
+        end
+      end
+    end
+
     configs.setup({
+      ignore_install = ignore_install,
       ensure_installed = {
         "c", "cpp", "lua", "vim", "vimdoc", "bash", "php", "php_only",
         "javascript", "typescript", "tsx", "html", "css", "scss", "json",
         "yaml", "markdown", "markdown_inline", "sql", "dockerfile", "gitignore",
+        "vue",
       },
       auto_install = true,
       highlight = { enable = true, additional_vim_regex_highlighting = false },

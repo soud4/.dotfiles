@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# vifm preview dispatcher.
+#
+#   preview <file> <width> <height>
+#
+# Images are rendered with chafa in *symbol* mode on purpose: this session runs
+# inside tmux, where the kitty graphics protocol and sixel both need passthrough
+# and break easily. Symbol output is ordinary text, so it always survives.
+# If you ever run foot directly (no tmux), see the sixel note at the bottom.
+
+set -uo pipefail
+
+file=${1:?usage: preview <file> <width> <height>}
+width=${2:-80}
+height=${3:-24}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# Render an image file to the terminal at the preview size.
+render_image() {
+    if have chafa; then
+        chafa --format symbols --size "${width}x${height}" --animate off \
+              --polite on -- "$1" 2>/dev/null && return 0
+    fi
+    have exiftool && exiftool -- "$1" 2>/dev/null && return 0
+    file -b -- "$1"
+}
+
+# Metadata header printed above/below a media preview.
+media_info() {
+    if have mediainfo; then
+        mediainfo -- "$1" 2>/dev/null \
+            | sed -n '/^\(General\|Video\|Audio\|Image\)/,$p' \
+            | grep -E '^(Format|Duration|Width|Height|Bit rate|Frame rate|Channel|Sampling|File size|Title|Artist|Album)' \
+            | head -14
+    elif have exiftool; then
+        exiftool -- "$1" 2>/dev/null | head -14
+    else
+        file -b -- "$1"
+    fi
+}
+
+mime=$(file -Lb --mime-type -- "$file" 2>/dev/null || echo application/octet-stream)
+
+case "$mime" in
+    image/*)
+        render_image "$file"
+        ;;
+    video/*)
+        if have ffmpegthumbnailer && have chafa; then
+            thumb=$(mktemp --suffix=.png) || exit 0
+            trap 'rm -f -- "$thumb"' EXIT
+            # -s0 keeps the source resolution; chafa does the downscaling.
+            if ffmpegthumbnailer -i "$file" -o "$thumb" -s 0 -q 8 >/dev/null 2>&1; then
+                chafa --format symbols --size "${width}x$((height > 6 ? height - 5 : height))" \
+                      --animate off --polite on -- "$thumb" 2>/dev/null
+                echo
+            fi
+        fi
+        media_info "$file"
+        ;;
+    audio/*)
+        media_info "$file"
+        ;;
+    application/pdf)
+        if have pdftotext; then
+            pdftotext -l 10 -nopgbrk -q -- "$file" - 2>/dev/null | head -n "$height"
+        else
+            file -b -- "$file"
+        fi
+        ;;
+    inode/directory)
+        if have eza; then
+            eza --tree --level=2 --color=always --icons=auto --group-directories-first -- "$file"
+        else
+            ls -la --color=always -- "$file"
+        fi
+        ;;
+    application/json)
+        if have bat; then
+            bat --color=always --style=plain --paging=never --terminal-width "$width" -- "$file"
+        else
+            python3 -m json.tool -- "$file" 2>/dev/null || cat -- "$file"
+        fi
+        ;;
+    application/zip|application/x-tar|application/gzip|application/x-xz|\
+    application/zstd|application/x-7z-compressed|application/x-rar|\
+    application/x-bzip2|application/java-archive|application/vnd.debian.binary-package|\
+    application/x-rpm|application/x-cpio)
+        if have atool; then
+            atool -l -- "$file" 2>/dev/null | head -n "$height"
+        elif have bsdtar; then
+            bsdtar -tf "$file" 2>/dev/null | head -n "$height"
+        else
+            file -b -- "$file"
+        fi
+        ;;
+    text/*|application/x-shellscript|application/javascript|application/xml|\
+    application/x-perl|application/x-ruby|application/toml|application/x-yaml)
+        if have bat; then
+            bat --color=always --style=plain --paging=never --terminal-width "$width" -- "$file"
+        else
+            cat -- "$file"
+        fi
+        ;;
+    application/vnd.oasis.opendocument.text)
+        if have odt2txt; then
+            odt2txt "$file" 2>/dev/null | head -n "$height"
+        else
+            # content.xml with the tags stripped is still readable prose.
+            unzip -p "$file" content.xml 2>/dev/null \
+                | sed -e 's/<[^>]*>/ /g' -e 's/  */ /g' | head -n "$height"
+        fi
+        ;;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document)
+        # No odt2txt support for OOXML, so read the part that holds the text.
+        unzip -p "$file" word/document.xml 2>/dev/null \
+            | sed -e 's|</w:p>|\n|g' -e 's/<[^>]*>//g' | head -n "$height"
+        ;;
+    application/epub+zip)
+        unzip -l "$file" 2>/dev/null | head -n "$height"
+        ;;
+    inode/x-empty)
+        echo "(empty file)"
+        ;;
+    *)
+        # Unknown: describe it, then show a bounded hex dump.
+        file -b -- "$file"
+        echo
+        if have od; then
+            od -A x -t x1z -v -N 2048 -- "$file" | head -n "$((height > 2 ? height - 2 : 1))"
+        fi
+        ;;
+esac
+
+# ---------------------------------------------------------------------------
+# Sixel alternative (foot, NOT inside tmux):
+#   chafa --format sixel --size "${width}x${height}" -- "$file"
+# and in 04-previews.vifm switch the image previewer to a command containing
+# both %px and %py so vifm treats it as a graphics previewer and clears it
+# properly. Also set:  set previewoptions=graphicsdelay:50000,hardgraphicsclear
+# ---------------------------------------------------------------------------

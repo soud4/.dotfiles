@@ -99,6 +99,43 @@ local function report_keys(dohwa)
   end
 end
 
+--- The documentation is part of the configuration, so its staleness is a health
+--- problem like any other: a generated page that no longer matches the live
+--- model, a link that leads nowhere, an active module with no section of its
+--- own. All three are mechanical, so none of them needs to be noticed by hand.
+local function report_docs()
+  local ok, gendoc = pcall(require, "dohwa.gendoc")
+  if not ok then
+    return
+  end
+  health.start("docs")
+
+  local stale = gendoc.check()
+  if #stale == 0 then
+    health.ok("docs/reference/*.md está al día")
+  else
+    health.warn(("desactualizado: %s"):format(table.concat(stale, ", ")),
+      { "regenera con scripts/gendoc.sh o :Dohwa gendoc" })
+  end
+
+  local broken, checked = gendoc.broken_links()
+  if #broken == 0 then
+    health.ok(("%d enlaces relativos, ninguno roto"):format(checked))
+  else
+    for _, link in ipairs(broken) do
+      health.error("enlace roto: " .. link)
+    end
+  end
+
+  local missing = gendoc.missing_sections()
+  if #missing == 0 then
+    health.ok("cada módulo activo tiene su sección")
+  else
+    health.warn("sin documentar: " .. table.concat(missing, ", "),
+      { "la sección debe titularse con el nombre exacto del módulo, que es lo que busca <leader>hm" })
+  end
+end
+
 local function report_messages(dohwa)
   local problems = vim.tbl_filter(function(entry)
     return entry.level == "error" or entry.level == "warn"
@@ -125,6 +162,7 @@ function M.check()
   report_order(dohwa)
   report_features(dohwa)
   report_keys(dohwa)
+  report_docs()
   report_messages(dohwa)
 end
 

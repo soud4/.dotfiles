@@ -132,6 +132,36 @@ local SUBCOMMANDS = {
     local ok, message = dohwa:enable(args[1])
     vim.notify(message, ok and vim.log.levels.INFO or vim.log.levels.ERROR)
   end,
+  -- Regenerate docs/reference/*.md from this very session, or just report drift.
+  gendoc = function(_, args)
+    local gendoc = require("dohwa.gendoc")
+    if args[1] == "--check" then
+      local stale = gendoc.check()
+      local broken = gendoc.broken_links()
+      local missing = gendoc.missing_sections()
+      local lines = {}
+      for _, name in ipairs(stale) do
+        lines[#lines + 1] = "  desactualizado  docs/reference/" .. name .. ".md"
+      end
+      for _, link in ipairs(broken) do
+        lines[#lines + 1] = "  enlace roto     " .. link
+      end
+      for _, item in ipairs(missing) do
+        lines[#lines + 1] = "  sin documentar  " .. item
+      end
+      return popup.show(#lines > 0 and lines or { "  la documentación está al día" },
+        { title = "Dohwa · gendoc --check" })
+    end
+    local written, failed = gendoc.write()
+    local lines = {}
+    for _, path in ipairs(written) do
+      lines[#lines + 1] = "  escrito  " .. vim.fn.fnamemodify(path, ":.")
+    end
+    for _, err in ipairs(failed) do
+      lines[#lines + 1] = "  FALLO    " .. err
+    end
+    popup.show(lines, { title = "Dohwa · gendoc" })
+  end,
 }
 
 function M.register(dohwa)
@@ -152,6 +182,11 @@ function M.register(dohwa)
         return vim.tbl_filter(function(name)
           return name:find(lead, 1, true) == 1
         end, vim.tbl_keys(SUBCOMMANDS))
+      end
+      if parts[2] == "gendoc" then
+        return vim.tbl_filter(function(name)
+          return name:find(lead, 1, true) == 1
+        end, { "--check" })
       end
       if parts[2] == "why" or parts[2] == "enable" or parts[2] == "disable" then
         return vim.tbl_filter(function(name)

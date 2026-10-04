@@ -1,0 +1,38 @@
+" =============================================================================
+" 07-marks.vifm -- marks, bookmarks and per-directory behaviour
+" =============================================================================
+"
+" Jump to a mark with 'x (e.g. 'h for home). :marks lists them all.
+" These point only at directories that actually exist on this machine.
+
+mark h ~/
+mark c ~/.config/
+mark d ~/Downloads/
+mark D ~/Documents/
+mark p ~/Pictures/
+mark m ~/Music/
+mark V ~/Videos/
+mark l ~/Laboratory/
+mark z ~/Zotero/
+mark t /tmp/
+mark v ~/.config/vifm/
+
+" ------------------------------------------------------------- autocommands
+" DirEnter patterns without a slash match the last path component anywhere;
+" patterns with slashes match the whole path. 'sort' and 'lsview' are local
+" options, so these settings stay attached to the pane that entered the
+" directory and do not leak into the other one.
+
+" Downloads is a queue, not a library: newest first.
+autocmd DirEnter ~/Downloads set sort=-mtime
+
+" Image directories are much easier to scan as a grid of names.
+autocmd DirEnter ~/Pictures/** set lsview
+autocmd DirEnter !~/Pictures/** set nolsview
+
+" This config tree is browsed on a narrow pane more often than not, and the
+" file names here are long; drop the mtime column while inside it.
+autocmd DirEnter ~/.config/vifm/** set viewcolumns=-{name}..,8{size}
+
+" Inside a .git directory the interesting thing is almost always a dotfile.
+autocmd DirEnter **/.git/** set dotfiles

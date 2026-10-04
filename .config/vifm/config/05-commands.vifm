@@ -1,0 +1,76 @@
+" =============================================================================
+" 05-commands.vifm -- :user commands
+" =============================================================================
+
+" ------------------------------------------------------------------ the basics
+command! df      df -h %m 2> /dev/null
+command! diff    nvim -d %f %F
+command! mkcd    :mkdir %a | cd %a
+command! run     !! ./%f
+command! make    !!make %a
+command! chmodx  !!chmod +x %f
+command! du      !!du -hsc %f %i | less
+command! reload  :write | restart full
+
+" Edit this configuration tree, then reload it in place.
+command! cfg     :edit $VIFM/vifmrc
+command! cfgdir  :cd $VIFM/config
+
+" --------------------------------------------------------------------- archives
+" vifm has no built-in archiver; atool covers every format in one interface.
+if executable('atool')
+    command! extract  !!atool -x %f
+    command! extractd !!atool -X . %f
+    " :compress name.tar.zst  -- extension decides the format
+    command! compress !!atool -a %a %f
+elseif executable('bsdtar')
+    command! extract  !!bsdtar -xf %f
+    command! compress !!bsdtar -caf %a %f
+endif
+
+" ----------------------------------------------------------------------- trash
+" 'trash' is on (01-options.vifm), so d/D already go through vifm's own trash.
+" These expose the XDG trash for files deleted by *other* programs.
+if executable('trash-list')
+    command! trashlist    !!trash-list | less
+    command! trashrestore !!trash-restore
+    command! trashempty   !!trash-empty
+endif
+
+" ------------------------------------------------------------------------- fzf
+" term() is used instead of system() because fzf needs a terminal of its own.
+" Each command guards against an empty result, which is what Esc produces --
+" without the guard, :goto would error out on an empty path.
+if executable('fzf')
+
+    " Jump to a file anywhere below the current directory.
+    if executable('fd')
+        command! ff :execute 'goto'
+                  \ fnameescape(term('fd --hidden --follow --exclude .git --type f
+                  \ | fzf --height 100%% --reverse --prompt "file> "'))
+    else
+        command! ff :execute 'goto'
+                  \ fnameescape(term('find . -type f
+                  \ | fzf --height 100%% --reverse --prompt "file> "'))
+    endif
+
+    " Jump to a directory anywhere below the current directory.
+    if executable('fd')
+        command! fd :execute 'goto'
+                  \ fnameescape(term('fd --hidden --follow --exclude .git --type d
+                  \ | fzf --height 100%% --reverse --prompt "dir> "'))
+    else
+        command! fd :execute 'goto'
+                  \ fnameescape(term('find . -type d
+                  \ | fzf --height 100%% --reverse --prompt "dir> "'))
+    endif
+
+    " Full-text search, then jump to the matching file.
+    if executable('rg')
+        command! fg :execute 'goto'
+                  \ fnameescape(term('rg --files-with-matches --hidden --glob !.git
+                  \ --smart-case %a
+                  \ | fzf --height 100%% --reverse --prompt "grep> "'))
+    endif
+
+endif

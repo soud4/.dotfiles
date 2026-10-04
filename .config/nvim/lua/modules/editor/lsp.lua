@@ -26,8 +26,26 @@ M.servers = {
     filetypes = {
       "javascript", "javascriptreact", "javascript.jsx",
       "typescript", "typescriptreact", "typescript.tsx",
+      "vue",
     },
     root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+    init_options = {
+      plugins = {
+        {
+          name = "@vue/typescript-plugin",
+          location = vim.fs.joinpath(
+            vim.fn.stdpath("data"),
+            "mason",
+            "packages",
+            "vue-language-server",
+            "node_modules",
+            "@vue",
+            "typescript-plugin"
+          ),
+          languages = { "javascript", "typescript", "vue" },
+        },
+      },
+    },
     settings = (function()
       -- ts_ls wants the same inlay-hint block twice, once per language.
       local hints = {
@@ -43,6 +61,12 @@ M.servers = {
       }
       return { javascript = hints, typescript = hints }
     end)(),
+  },
+
+  vue_ls = {
+    cmd = { "vue-language-server", "--stdio" },
+    filetypes = { "vue" },
+    root_markers = { "package.json", "vue.config.js", "vite.config.js", "vite.config.ts", ".git" },
   },
 
   tailwindcss = {
@@ -137,6 +161,57 @@ local function add_mason_to_path()
   end
 end
 
+--- Which server wins when several of them serve inlay hints for one buffer.
+--- Higher goes first; anything unlisted sits in the middle. ts_ls carries the
+--- Vue plugin, so it already answers for .vue buffers and vue_ls loses nothing
+--- worth keeping.
+local hint_priority = {
+  ts_ls = 90,
+  clangd = 90,
+  lua_ls = 90,
+  pyright = 90,
+  vue_ls = 10,
+}
+
+--- The client whose inlay hints this buffer draws, or nil when none serves them.
+local function hint_owner(bufnr)
+  local best, best_rank
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/inlayHint" })) do
+    local rank = hint_priority[client.name] or 50
+    if not best_rank or rank > best_rank or (rank == best_rank and client.id < best.id) then
+      best, best_rank = client, rank
+    end
+  end
+  return best
+end
+
+--- Neovim keeps one hint list per client but a single `version` for the whole
+--- buffer, and a change notification only refreshes the client that sent it
+--- (`vim/lsp/inlay_hint.lua`). So with two hint-serving servers on one buffer
+--- the fresher answer marks the state current while the other client's byte
+--- columns still point into lines that have since shrunk, and the decoration
+--- provider dies with "Invalid 'col': out of range". Dropping every answer but
+--- the owner's keeps hints and version in step, which is what that code assumes.
+local guarded = false
+local function guard_inlay_hints()
+  if guarded then
+    return
+  end
+  guarded = true
+
+  local upstream = vim.lsp.inlay_hint.on_inlayhint
+  vim.lsp.inlay_hint.on_inlayhint = function(err, result, ctx)
+    local bufnr = ctx and ctx.bufnr
+    if not err and bufnr and vim.api.nvim_buf_is_loaded(bufnr) then
+      local owner = hint_owner(bufnr)
+      if owner and owner.id ~= ctx.client_id then
+        return
+      end
+    end
+    return upstream(err, result, ctx)
+  end
+end
+
 --- Register and enable servers with the native API.
 ---@param ctx Context
 ---@param only_available boolean start only what is actually installed
@@ -158,6 +233,8 @@ M.description = "Language servers"
 M.optional = { "editor.complete", "tools.finder" }
 
 M.native = function(ctx)
+  guard_inlay_hints()
+
   ctx:reserve("<leader>c", "Code")
   ctx:slot({ "n", "v" }, "<leader>ca", "code.action")
   ctx:slot("n", "<leader>cr", "code.rename")
@@ -195,6 +272,11 @@ M.native = function(ctx)
       end
 
       if client:supports_method("textDocument/inlayHint") then
+        -- A second hint-serving client can take ownership of the buffer, so the
+        -- state starts from scratch instead of keeping the loser's columns in it.
+        if vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }) then
+          vim.lsp.inlay_hint.enable(false, { bufnr = event.buf })
+        end
         vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
       end
 

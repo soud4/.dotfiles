@@ -1,0 +1,31 @@
+" =============================================================================
+" 04-previews.vifm -- quick view (w) and view mode
+" =============================================================================
+"
+" All previewing funnels through scripts/preview, which dispatches on MIME type
+" and degrades gracefully when an optional tool is missing. Keeping it in one
+" script rather than spreading ~20 :fileviewer rules across this file means the
+" dispatch logic is testable on its own:
+"
+"     ~/.config/vifm/scripts/preview <file> <width> <height>
+"
+" vifm adds scripts/ to $PATH, so the bare name resolves.
+"
+" %c:p -- absolute path of the current file
+" %pw  -- width of the preview area
+" %ph  -- height of the preview area
+"
+" Deliberately no %px/%py: a previewer containing both is treated by vifm as a
+" *graphics* previewer. The image path uses chafa in symbol mode (plain text),
+" which is what makes previews work inside tmux, so vifm should treat the
+" output as ordinary text.
+fileviewer */ preview %c:p %pw %ph
+fileviewer *  preview %c:p %pw %ph
+
+" Symbol-mode output is text, so no delay is needed before drawing and nothing
+" lingers that would require a hard clear. Cap preview trees so that previewing
+" a huge directory cannot stall the UI.
+set previewoptions=graphicsdelay:0,maxtreedepth:3
+
+" Man pages render better through the real pager pipeline than through `file`.
+fileviewer {*.[1-8]},<text/troff> man ./%c | col -b

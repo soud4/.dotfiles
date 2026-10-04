@@ -20,7 +20,7 @@ local PROGRAMS = {
 --- resolved per buffer rather than per filetype.
 local PRETTIER_FILETYPES = {
   "javascript", "typescript", "javascriptreact", "typescriptreact",
-  "html", "css", "scss", "json", "markdown", "yaml",
+  "html", "css", "scss", "json", "markdown", "yaml", "vue",
 }
 
 local function formatprg_for(filetype, file)
@@ -119,6 +119,7 @@ return {
             typescript = { "prettierd", "prettier", stop_after_first = true },
             javascriptreact = { "prettierd", "prettier", stop_after_first = true },
             typescriptreact = { "prettierd", "prettier", stop_after_first = true },
+            vue = { "prettierd", "prettier", stop_after_first = true },
             html = { "prettierd", "prettier", stop_after_first = true },
             css = { "prettierd", "prettier", stop_after_first = true },
             scss = { "prettierd", "prettier", stop_after_first = true },

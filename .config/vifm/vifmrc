@@ -1,0 +1,29 @@
+" =============================================================================
+" vifm configuration -- index
+" =============================================================================
+"
+" This file deliberately contains no settings. Everything lives in config/,
+" split by concern, and is sourced in order below. Edit a module and press
+" ,c to reload (or run :reload).
+"
+"   01-options    core behaviour, minimalist TUI, search, trash, history
+"   02-ui         view columns, status line, tab line, file-type icons
+"   03-filetypes  what Enter/l opens, guarded by executable()
+"   04-previews   quick view, driven by scripts/preview
+"   05-commands   :user commands, including the fzf pickers
+"   06-mappings   key bindings; leader is ","
+"   07-marks      marks and per-directory autocommands
+"
+" $VIFM is set by vifm to this directory. Globs are not expanded by :source,
+" so the modules are listed explicitly -- which also fixes their order.
+"
+" The stock sample config that used to live here is kept verbatim as
+" vifmrc.orig (and vifmrc.bak) for reference.
+
+source $VIFM/config/01-options.vifm
+source $VIFM/config/02-ui.vifm
+source $VIFM/config/03-filetypes.vifm
+source $VIFM/config/04-previews.vifm
+source $VIFM/config/05-commands.vifm
+source $VIFM/config/06-mappings.vifm
+source $VIFM/config/07-marks.vifm

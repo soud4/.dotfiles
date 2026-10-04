@@ -1,0 +1,114 @@
+" =============================================================================
+" 02-ui.vifm -- columns, status line, tab line and file-type icons
+" =============================================================================
+
+" --------------------------------------------------------------- colour scheme
+" Loaded first so that everything below is drawn with it. The fallbacks are
+" tried in order if the primary scheme file is missing.
+colorscheme gruvbox Default-256 Default
+
+" --------------------------------------------------------------- view columns
+" 'viewcolumns' is a LOCAL option, so it must be applied with :windo to affect
+" both panes rather than only the active one.
+"
+" Default is name + size: the mtime column is a luxury that eats the file name
+" once a pane gets narrower than ~50 columns. Cycle the three layouts with ,v
+" (see 06-mappings.vifm).
+windo set viewcolumns=-{name}..,8{size}
+
+" ---------------------------------------------------------------- status line
+" One line, no filler, no "Hint:". Macros used:
+"   %t  file name, including the 'classify' icon
+"   %=  split between left- and right-aligned halves
+"   %A  permissions
+"   %E  size -- of the selection when files are selected, of the current file
+"       otherwise, so this single macro covers both cases
+"   %d  modification time, formatted by 'timefmt'
+set statusline=" %t%= %A  %9E  %d "
+
+" Compact ruler: position/total, plus a "+N" block that only appears when a
+" local filter is actually hiding something.
+set rulerformat="%2l/%S%[ +%x%]"
+
+" ------------------------------------------------------------------- tab line
+" Tabs are per-pane ('tabscope' in 01-options.vifm), so keep their labels to
+" the directory tail; 'shortmess' already contains L for the same reason.
+set tabprefix=" %N "
+set tablabel="%[%T~%]%p:t"
+set tabsuffix=" "
+
+" --------------------------------------------------------------------- icons
+" Nerd Font glyphs, verified present in MonaspiceNe NFP (the font foot is
+" configured with). Every prefix is "glyph + space" so the file-name column
+" starts at the same offset on every row.
+"
+" Patterns use the /regex/ form rather than {glob} because 'classify' is a
+" comma-separated list and a comma inside a glob group would have to be
+" doubled; regexes keep each element comma-free and therefore unambiguous.
+"
+" Priority, per vifm: name patterns beat type patterns, and name patterns are
+" matched left to right -- hence the specific names (README, Makefile, dotfiles)
+" come before the generic extension groups below them.
+set classify=' :dir:/,
+            \ :exe:,
+            \ :link:,
+            \ :fifo:,
+            \ :sock:,
+            \ :char:,
+            \ :block:,
+            \ ::/^(README|readme).*/::,
+            \ ::/^(LICENSE|LICENCE|COPYING).*/::,
+            \ ::/^\.git(ignore|attributes|modules|config|keep)?$/::,
+            \ ::/^(Makefile|makefile|GNUmakefile|CMakeLists\.txt|meson\.build|justfile|Justfile)$/::,
+            \ ::/^(vifmrc|\.bashrc|\.bash_profile|\.profile|\.inputrc|\.editorconfig)$/::,
+            \ ::/\.(md|markdown|rst|org|txt|text)$/::,
+            \ ::/\.rs$/::,
+            \ ::/\.(py|pyi|pyw)$/::,
+            \ ::/\.(js|mjs|cjs|jsx)$/::,
+            \ ::/\.(ts|tsx)$/::,
+            \ ::/\.go$/::,
+            \ ::/\.lua$/::,
+            \ ::/\.(java|class|jar)$/::,
+            \ ::/\.(php)$/::,
+            \ ::/\.(kt|kts)$/::,
+            \ ::/\.(hs|cabal)$/::,
+            \ ::/\.nix$/::,
+            \ ::/\.(rb|gemspec)$/::,
+            \ ::/\.(c|h|cc|cpp|hpp|cxx|hxx|ino)$/::,
+            \ ::/\.(html?|xhtml)$/::,
+            \ ::/\.(css|scss|sass|less)$/::,
+            \ ::/\.(json|ya?ml|toml|ini|conf|cfg|desktop|service|rc)$/::,
+            \ ::/\.(sh|bash|zsh|fish|ksh|csh)$/::,
+            \ ::/\.(png|jpe?g|gif|webp|svg|svgz|bmp|avif|ico|tiff?|xpm|ppm|heic)$/::,
+            \ ::/\.(mp4|mkv|webm|avi|mov|m4v|flv|wmv|mpe?g|ogv|3gp|ts)$/::,
+            \ ::/\.(mp3|flac|opus|ogg|oga|wav|m4a|aac|wma|ape|mid)$/::,
+            \ ::/\.(zip|tar|gz|tgz|xz|txz|zst|tzst|7z|rar|bz2|tbz2|lz4|lzma|lzo|Z)$/::,
+            \ ::/\.(deb|rpm|apk|snap|flatpak|AppImage)$/::,
+            \ ::/\.(iso|img|qcow2|vdi|vmdk|raw)$/::,
+            \ ::/\.(pdf|ps|eps|djvu)$/::,
+            \ ::/\.(docx?|odt|rtf|epub|mobi|fb2)$/::,
+            \ ::/\.(xlsx?|ods|csv|tsv)$/::,
+            \ ::/\.(pptx?|odp)$/::,
+            \ ::/\.(db|sqlite3?|sql|dump)$/::,
+            \ ::/\.(ttf|otf|woff2?|eot|pfb)$/::,
+            \ ::/\.(patch|diff)$/::,
+            \ ::/\.(log)$/::,
+            \ ::/\.(gpg|asc|pem|key|crt|cer|sig|md5|sha1|sha256|sha512)$/::,
+            \ :reg:'
+
+" Known consequence of that priority rule: a symbolic link whose name matches
+" an extension rule (link.md) shows the markdown icon, not a link icon -- a
+" name match replaces the type entry entirely, suffix included. Symlinks stay
+" recognisable through the Link highlight group (aqua) in colors/gruvbox.vifm.
+
+" Remember the icon table so the zi toggle in 06-mappings.vifm can restore it
+" without having to repeat the whole thing.
+let g:icons = &classify
+
+" If you ever switch the terminal to a font without Nerd Font patches, replace
+" the block above with this ASCII-safe variant (uncomment it, comment that):
+"
+" set classify='▸ :dir:/,
+"             \· :exe:,
+"             \↪ :link:,
+"             \  :reg:'

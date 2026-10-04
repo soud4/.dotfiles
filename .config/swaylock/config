@@ -1,42 +1,53 @@
+# Swaylock Configuration
+# Minimalist Gruvbox-inspired aesthetic
+
 daemonize
-clock
-timestr=%H:%M
-datestr=%A, %d de %B
+ignore-empty-password
 
-indicator
-indicator-idle-visible
-
-effect-blur=7x5
-fade-in=0.2
-
-image=/home/souda/Downloads/wallpaperflare.com_wallpaper.jpg
+# Fondo de pantalla (Ruta ABSOLUTA requerida, no usar ~)
+image=/home/souda/Documents/mountain-village.png
 scaling=fill
+color=060504
 
+# Tipografía
 font=Inter
-font-size=24
+font-size=18
 
-indicator-radius=120
-indicator-thickness=10
+# Dimensiones del indicador (compacto y sutil)
+indicator-radius=45
+indicator-thickness=4
 
-inside-color=060504cc
-ring-color=CB8F34ff
-key-hl-color=59c2ffff
+# Ocultar el indicador cuando no se está escribiendo para una pantalla 100% limpia
+# (Descomenta la siguiente línea si prefieres ver el círculo todo el tiempo):
+# indicator-idle-visible
+
+# Transparencias y separadores limpios
 line-color=00000000
 separator-color=00000000
+
+# Estado normal / Escribiendo
+inside-color=060504bb
+ring-color=CB8F34aa
+key-hl-color=59c2ffff
+bs-hl-color=f07178ff
 text-color=FAF4EBff
 
-inside-ver-color=aad94cff
+# Verificando contraseña (Verde sutil)
+inside-ver-color=060504bb
 ring-ver-color=aad94cff
-text-ver-color=060504ff
+text-ver-color=aad94cff
 
-inside-wrong-color=f07178ff
+# Contraseña incorrecta (Rojo suave)
+inside-wrong-color=060504bb
 ring-wrong-color=f07178ff
-text-wrong-color=060504ff
+text-wrong-color=f07178ff
 
-inside-clear-color=3a3a3add
+# Borrado / Clear
+inside-clear-color=060504bb
 ring-clear-color=3a3a3aff
 text-clear-color=FAF4EBff
 
+# Distribución del teclado (Layout)
 layout-text-color=FAF4EBff
-layout-bg-color=060504cc
-layout-border-color=CB8F34ff
+layout-bg-color=060504bb
+layout-border-color=00000000

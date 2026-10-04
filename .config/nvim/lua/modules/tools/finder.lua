@@ -176,6 +176,25 @@ return {
       end
     end)
 
+    -- Whoever owns the documentation publishes its directory as `docs.root`.
+    -- Implementing a feature this module did not declare is deliberate: the
+    -- registry keeps it as a placeholder, so neither side has to know whether
+    -- the other is switched on.
+    local function in_docs(builtin_name, title)
+      return function()
+        return function()
+          local docs = ctx:value("docs.root")
+          if not docs then
+            return vim.notify("no documentation directory is published", vim.log.levels.WARN)
+          end
+          require("telescope.builtin")[builtin_name]({ cwd = docs, prompt_title = title })
+        end
+      end
+    end
+
+    ctx:implement("docs.browse", 50, in_docs("find_files", "Docs"))
+    ctx:implement("docs.grep", 50, in_docs("live_grep", "Search docs"))
+
     -- Core's global slots keep their keys; only the implementation changes.
     ctx:implement("diagnostic.list", 50, builtin("diagnostics"))
     ctx:implement("symbols.document", 50, builtin("lsp_document_symbols"))

@@ -58,5 +58,17 @@ result=$(run "$(echo "$MODULES" | paste -sd,)")
 printf '%s\n' "$result"
 [[ $result == OK ]] || failures=$((failures + 1))
 
+# The documentation is part of the configuration: a generated reference that no
+# longer matches the live model is a failure like any other. Runs with nothing
+# disabled, so it describes the real configuration.
+printf '\n  %-22s ' "(docs up to date)"
+docs=$("$CONFIG/scripts/gendoc.sh" --check 2>&1 | tr -d '\r')
+if [[ $docs == *OK* ]]; then
+  printf 'OK\n'
+else
+  printf 'FAIL %s\n' "$(echo "$docs" | tr '\n' ' ')"
+  failures=$((failures + 1))
+fi
+
 printf '\n%d failure(s)\n' "$failures"
 exit $((failures > 0))

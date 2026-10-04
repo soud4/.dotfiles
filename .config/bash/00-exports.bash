@@ -2,18 +2,18 @@
 # EXPORTS — Variables de entorno globales
 # ════════════════════════════════════════════════════════════
 export PROMPT_DIRTRIMS=1
-export TERM=xterm-256color          # Color básico por defecto
-export SUDO_EDITOR=nvim             # Editor que usa sudo visudo, etc.
-export EDITOR=nvim                  # Editor por defecto del sistema
+export TERM=xterm-256color # Color básico por defecto
+export SUDO_EDITOR=nvim    # Editor que usa sudo visudo, etc.
+export EDITOR=nvim         # Editor por defecto del sistema
 export VISUAL=nvim
-export PAGER=less                   # Paginador por defecto
+export PAGER=less # Paginador por defecto
 export LESS='-R -F -X -i -M -j.5 -# .5 -~ -N --quit-if-one-screen --ignore-case'
 
 # Historial — más grande, sin duplicados, con timestamp
-export HISTSIZE=10000               # Líneas en memoria
-export HISTFILESIZE=20000           # Líneas guardadas en disco
-export HISTCONTROL=ignoreboth       # Ignora duplicados y líneas con espacio inicial
-export HISTTIMEFORMAT='%F %T  '     # Muestra fecha/hora en `history`
+export HISTSIZE=10000           # Líneas en memoria
+export HISTFILESIZE=20000       # Líneas guardadas en disco
+export HISTCONTROL=ignoreboth   # Ignora duplicados y líneas con espacio inicial
+export HISTTIMEFORMAT='%F %T  ' # Muestra fecha/hora en `history`
 export HISTIGNORE='ls:ll:la:cd:pwd:exit:clear:history:bg:fg'
 
 # Colores para man, less y grep
@@ -27,10 +27,10 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 
 # Soporte truecolor dentro de tmux
 case "$TERM" in
-    tmux*)
-        export TERM=tmux-256color
-        export COLORTERM=truecolor
-        ;;
+tmux*)
+    export TERM=tmux-256color
+    export COLORTERM=truecolor
+    ;;
 esac
 
 # Binarios locales del usuario

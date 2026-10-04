@@ -20,8 +20,15 @@ lua/core/ui.lua          shared visual tokens (border, icons)
 lua/dohwa/               the kernel
 lua/modules/             one file per switchable unit
 lua/profiles/            which modules are on
+docs/                    the documentation, read from inside nvim
 scripts/matrix.sh        the disable matrix
+scripts/gendoc.sh        the generated reference pages
 ```
+
+**[docs/README.md](docs/README.md)** is the map: architecture, one page per
+module group, the task guides, and a generated key and feature reference.
+`<leader>hh` browses it inside Neovim, `<leader>hm` opens the page for the file
+you are editing.
 
 ## The object model
 
@@ -121,7 +128,7 @@ what makes disabling safe:
 | `plugins(ctx)` | pure data for the loader |
 | `setup(ctx)` | inside the plugin's own `config()`, so it stays lazy |
 
-**[docs/adding-a-module.md](docs/adding-a-module.md)** has the full recipe: how
+**[docs/guides/adding-a-module.md](docs/guides/adding-a-module.md)** has the full recipe: how
 to classify a plugin, three worked examples from six lines upwards, the Context
 API, and the five things that trip you up.
 
@@ -152,61 +159,37 @@ Running as root also forces the null loader — see `init.lua`.
 
 ## Performance
 
-Measured with `--startuptime`, median of 11 runs, on this machine. The right-hand
+Measured with `--startuptime`, median of 9 runs, on this machine. The right-hand
 column is the one that matters day to day: `BufReadPre` and `BufReadPost` are
 where most of the work happens, not the empty-editor startup. Run-to-run variance
 is around 3 ms, so treat these as the shape of the cost rather than exact figures.
 
 | | empty | opening a `.lua` file |
 |---|---|---|
-| `nvim --clean` (floor) | 9.3 ms | 19.3 ms |
-| dohwa, zero plugins | 23.3 ms | 34.6 ms |
-| dohwa, all 14 modules | 29.1 ms | ~54 ms |
+| `nvim --clean` (floor) | 7.7 ms | 16.3 ms |
+| dohwa, zero plugins | 24.5 ms | 33.5 ms |
+| dohwa, all 15 modules | 32.6 ms | 55.1 ms |
 
-Cost of each module when a file is opened, from disabling them one at a time with
-`DOHWA_DISABLE` over two passes (the spread between passes is the variance, not a
-measurement error):
+The kernel is not the cost: `discover` + `graph:resolve` + `keys:commit` come to
+1.4 ms together, and feature dispatch — the indirection on every keypress — is
+below timer resolution, because LuaJIT compiles it away.
 
-| module | cost |
-|---|---|
-| `editor.syntax` (tree-sitter) | 6–7 ms |
-| `editor.lsp` (lspconfig) | 4–7 ms |
-| `ui.statusline` (lualine) | 4–6 ms |
-| `tools.git` (gitsigns) | ~4 ms |
-| `ui.theme` (gruvbox) | 2–3 ms |
-
-Things worth knowing, all measured rather than assumed:
-
-- **The kernel is not the cost.** `discover` + `graph:resolve` + `keys:commit`
-  come to 1.4 ms together; requiring its 16 files costs 3.9 ms. Feature dispatch
-  — the indirection on every keypress — is below timer resolution: LuaJIT
-  compiles it away.
-- **Do not add `vim.loader.enable()`.** lazy.nvim already installs a Lua module
-  cache, and adding a second layer measured *slower* (70.9 ms vs 68.3 ms median
-  over 15 runs).
-- **Mason is deferred to `VeryLazy`** rather than loading alongside
-  nvim-lspconfig. It is an installer: its only runtime contribution is a `PATH`
-  entry, which `add_mason_to_path()` in `lua/modules/editor/lsp.lua` does
-  natively. Leaving it on `BufReadPre` cost 8 ms on every file opened.
-- **nvim-lspconfig's Lua module is never required.** Neovim 0.12 reads its
-  418 `lsp/*.lua` files off the runtimepath, so it acts as a data directory.
-- **`vim.lsp.enable()` does not attach to buffers that are already open**, only
-  to subsequent `FileType` events. That is why servers are registered from
-  `setup()` on `BufReadPre` and cannot move later.
-- **Lazy loading happens on first use, not on a trigger event.** The key broker
-  owns every mapping and lazy.nvim hooks `require`, so Telescope is
-  `lazy = true` with no event at all: its first invocation costs ~12 ms more than
-  later ones. Completion and auto-pairs cost 28 ms together on the first entry
-  into insert mode, once per session.
+**[docs/performance.md](docs/performance.md)** has the per-module cost, the
+deferred costs, and the six decisions that were taken because a measurement
+asked for them: why `vim.loader.enable()` is absent, why Mason sits on
+`VeryLazy`, why Telescope has no load trigger, and how to measure a change
+without fooling yourself.
 
 ## Verifying
 
 ```bash
 scripts/matrix.sh lazy       # disable each module in turn, then all of them
 scripts/matrix.sh null       # same, with no plugins at all
+scripts/gendoc.sh --check    # generated docs, links and undocumented modules
 nvim --headless "+checkhealth dohwa" +qa
 ```
 
 The disable matrix is the real test: it asserts that after switching a module
 off, nothing errors, no feature is left without an implementation, and no key
-was refused.
+was refused. It finishes by checking the documentation against the live model,
+so a reference page that no longer matches is a failure like any other.

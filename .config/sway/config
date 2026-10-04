@@ -32,8 +32,8 @@ font pango:Inter ExtraBold 8
 ###############################################################################
 
 # Borde de 1px sin barra de título para ventanas normales y flotantes
-default_border          pixel 1
-default_floating_border pixel 1
+default_border          pixel 2
+default_floating_border pixel 2
 
 # Padding interno del titlebar: horizontal x vertical
 titlebar_padding 1 1
@@ -116,6 +116,8 @@ bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning \
     -m '¿Salir de Sway? Esto cerrará tu sesión Wayland.' \
     -B 'Sí, salir' 'swaymsg exit'
+
+bindsym $mod+Control+l exec swaylock
 
 
 ###############################################################################
@@ -386,7 +388,7 @@ for_window [title="scratch-terminal"] {
 ###############################################################################
 
 output * bg ~/.config/sway/wall.jpg fill
-
+ output * color_profile icc ~/.config/sway/icc/vibrance.icc
 output eDP-1 position 0,0
 output HDMI-A-1 position 1920,0
 

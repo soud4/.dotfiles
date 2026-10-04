@@ -1,0 +1,108 @@
+" gruvbox (dark, medium contrast) for vifm
+"
+" Each group sets both gui* (24-bit hex) and cterm* (256-palette fallback).
+" vifm uses gui* only when $TERM points at a "-direct" terminfo entry
+" (e.g. xterm-direct); otherwise the cterm* values are used.
+"
+" Palette reference:
+"   bg0_h #1d2021 234   bg0 #282828 235   bg1  #3c3836 237
+"   bg2   #504945 239   bg3 #665c54 241   bg4  #7c6f64 243
+"   fg0   #fbf1c7 229   fg1 #ebdbb2 223   fg2  #d5c4a1 250
+"   fg3   #bdae93 248   fg4 #a89984 246   gray #928374 245
+"   red #fb4934 167   green #b8bb26 142   yellow #fabd2f 214
+"   blue #83a598 109  purple #d3869b 175  aqua   #8ec07c 108
+"   orange #fe8019 208
+
+highlight clear
+
+" ---------------------------------------------------------------- base panes
+highlight Win       cterm=none ctermfg=223 ctermbg=235 guifg=#ebdbb2 guibg=#282828
+highlight OtherWin  cterm=none ctermfg=223 ctermbg=235 guifg=#ebdbb2 guibg=#282828
+highlight AuxWin    cterm=none ctermfg=223 ctermbg=235 guifg=#ebdbb2 guibg=#282828
+highlight Border    cterm=none ctermfg=237 ctermbg=235 guifg=#3c3836 guibg=#282828
+
+" Zebra striping is intentionally OFF: with two clean panes and no column
+" header it reads as noise rather than as structure. Uncomment to get it back.
+" highlight OddLine cterm=none ctermbg=234 guibg=#1d2021
+
+" ------------------------------------------------------------- cursor / sel
+" The cursor is marked by weight and an underline over a slightly lifted
+" background, not by a solid aqua block: the file name keeps its own colour
+" (extension rules below still apply) and the eye still finds the row.
+highlight CurrLine  cterm=bold,underline ctermbg=237 guibg=#3c3836
+highlight OtherLine cterm=none ctermfg=246 guifg=#a89984
+highlight Selected  cterm=bold ctermfg=214 ctermbg=237 guifg=#fabd2f guibg=#3c3836
+highlight LineNr    cterm=none ctermfg=241 ctermbg=235 guifg=#665c54 guibg=#282828
+
+" ------------------------------------------------------------- bars and tabs
+highlight TopLine    cterm=none ctermfg=246 ctermbg=237 guifg=#a89984 guibg=#3c3836
+highlight TopLineSel cterm=bold ctermfg=214 ctermbg=237 guifg=#fabd2f guibg=#3c3836
+highlight TabLine    cterm=none ctermfg=246 ctermbg=234 guifg=#a89984 guibg=#1d2021
+highlight TabLineSel cterm=bold ctermfg=235 ctermbg=214 guifg=#282828 guibg=#fabd2f
+highlight StatusLine cterm=none ctermfg=223 ctermbg=239 guifg=#ebdbb2 guibg=#504945
+highlight JobLine    cterm=bold ctermfg=235 ctermbg=109 guifg=#282828 guibg=#83a598
+
+" ---------------------------------------------------------- command line etc
+highlight CmdLine    cterm=none ctermfg=223 ctermbg=235 guifg=#ebdbb2 guibg=#282828
+highlight ErrorMsg   cterm=bold ctermfg=167 ctermbg=235 guifg=#fb4934 guibg=#282828
+highlight WildBox    cterm=none ctermfg=223 ctermbg=237 guifg=#ebdbb2 guibg=#3c3836
+highlight WildMenu   cterm=bold ctermfg=235 ctermbg=214 guifg=#282828 guibg=#fabd2f
+highlight SuggestBox cterm=none ctermfg=223 ctermbg=237 guifg=#ebdbb2 guibg=#3c3836
+
+" ----------------------------------------------------------------- file kinds
+highlight Directory  cterm=bold ctermfg=109 guifg=#83a598
+highlight Link       cterm=none ctermfg=108 guifg=#8ec07c
+highlight BrokenLink cterm=bold ctermfg=167 guifg=#fb4934
+highlight HardLink   cterm=none ctermfg=223 guifg=#ebdbb2
+highlight Socket     cterm=bold ctermfg=175 guifg=#d3869b
+highlight Device     cterm=bold ctermfg=208 guifg=#fe8019
+highlight Fifo       cterm=bold ctermfg=214 guifg=#fabd2f
+highlight Executable cterm=bold ctermfg=142 guifg=#b8bb26
+
+" -------------------------------------------------------------- compare view
+highlight CmpMismatch cterm=bold ctermfg=223 ctermbg=88  guifg=#ebdbb2 guibg=#cc241d
+highlight CmpUnmatched cterm=none ctermbg=237 guibg=#3c3836
+highlight CmpBlank     cterm=none ctermbg=239 guibg=#504945
+
+" --------------------------------------------------- by extension (optional)
+" Archives
+highlight /\.(zip|zst|xz|lz4|lz|lzma|lzo|7z|tar|tgz|tbz2|txz|rar|gz|bz2|cab|iso|rpm|deb|apk|jar)$/I
+        \ cterm=none ctermfg=175 guifg=#d3869b
+" Images
+highlight /\.(png|jpe?g|gif|bmp|webp|svg|ico|tiff?|xcf|psd|avif)$/I
+        \ cterm=none ctermfg=135 guifg=#b16286
+" Video
+highlight /\.(mp4|mkv|avi|mov|webm|flv|wmv|mpe?g|m4v|ts)$/I
+        \ cterm=none ctermfg=172 guifg=#d79921
+" Audio
+highlight /\.(mp3|flac|ogg|opus|wav|m4a|aac|wma|mid)$/I
+        \ cterm=none ctermfg=72 guifg=#689d6a
+" Documents
+highlight /\.(pdf|epub|djvu|mobi|docx?|xlsx?|pptx?|odt|ods|odp)$/I
+        \ cterm=none ctermfg=109 guifg=#83a598
+" Source code
+highlight /\.(c|cc|cpp|h|hpp|rs|go|py|rb|js|ts|jsx|tsx|lua|sh|zsh|bash|fish|vim|java|kt|php|pl|hs|ml|zig|nim)$/I
+        \ cterm=none ctermfg=142 guifg=#b8bb26
+" Config / markup
+highlight /\.(json|ya?ml|toml|ini|conf|cfg|xml|md|rst|org|tex|html?|css|scss)$/I
+        \ cterm=none ctermfg=108 guifg=#8ec07c
+" Ignorable noise
+highlight /^.*~$|\.(bak|old|tmp|swp|o|a|so|pyc|class|lock)$/I
+        \ cterm=none ctermfg=245 guifg=#928374
+" Dotfiles
+highlight /^\./ cterm=none ctermfg=246 guifg=#a89984
+
+" ------------------------------------------------- status line accent colours
+" Reachable from 'statusline' / 'tabline' / 'tablabel' through the %1* .. %20*
+" macros, should you want to colour parts of those lines later.
+highlight User1 cterm=none ctermfg=246 ctermbg=239 guifg=#a89984 guibg=#504945
+highlight User2 cterm=bold ctermfg=214 ctermbg=239 guifg=#fabd2f guibg=#504945
+highlight User3 cterm=none ctermfg=108 ctermbg=239 guifg=#8ec07c guibg=#504945
+
+" ------------------------------------------------------------- column weights
+" The file name is the content; size and date are reference data. Dimming the
+" metadata columns is what keeps a multi-column pane from looking busy, and it
+" is why the mtime column is tolerable at all (see ,v in 06-mappings.vifm).
+highlight column:name  cterm=none ctermfg=223 guifg=#ebdbb2
+highlight column:size  cterm=none ctermfg=245 guifg=#928374
+highlight column:mtime cterm=none ctermfg=241 guifg=#665c54

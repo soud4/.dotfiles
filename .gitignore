@@ -72,7 +72,12 @@ Laboratory/
 .config/dconf/user
 .config/mimeapps.list
 .config/etc/**
-
+.CoppeliaSim/
+.agents/
+.claude.json
+.claude/
+.config/onlyoffice/
+v1.1.17
 
 
 
@@ -80,7 +85,7 @@ Laboratory/
 *.bak
 *.bak.*
 *~
-
+.config/Claude/
 # Security & Secrets prevention
 *password*
 *.key
