@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+SCREENSHOT_DIR="$HOME/Pictures/Screenshots"
+FILENAME="$SCREENSHOT_DIR/$(date +'%Y-%m-%d_%H-%M-%S').png"
+
+case "$1" in
+    full)
+        grim "$FILENAME"
+        ;;
+        
+    area)
+        region=$(slurp)
+        if [ -n "$region" ]; then
+            grim -g "$region" "$FILENAME"
+        fi
+        ;;
+        
+    copy)
+        region=$(slurp)
+        if [ -n "$region" ]; then
+            grim -g "$region" - | tee "$FILENAME" | wl-copy -t image/png
+        fi
+        ;;
+        
+    *)
+        echo "Error: Argumento no válido."
+        echo "Uso: $0 {full|area|copy}"
+        exit 1
+        ;;
+esac

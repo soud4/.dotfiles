@@ -8,6 +8,7 @@
 # VARIABLES
 ###############################################################################
 
+set $swaymenu   ~/.config/sway/scripts/swaymenu
 # Tecla modificadora principal (Mod4 = Super/Win | Mod1 = Alt)
 set $mod Mod4
 
@@ -60,7 +61,6 @@ input type:keyboard {
 set $touchpad 1267:12871:ELAN06FA:00_04F3:3247_Touchpad
 
 input $touchpad {
-    # Tap con uno/dos/tres dedos
     tap       enabled
     drag      enabled
     drag_lock disabled
@@ -113,9 +113,7 @@ floating_modifier $mod normal
 bindsym $mod+Shift+c reload
 
 # Salir de sway (cierra la sesión Wayland)
-bindsym $mod+Shift+e exec swaynag -t warning \
-    -m '¿Salir de Sway? Esto cerrará tu sesión Wayland.' \
-    -B 'Sí, salir' 'swaymsg exit'
+bindsym $mod+Shift+e exec $swaymenu logout
 
 bindsym $mod+Control+l exec swaylock
 
@@ -124,23 +122,15 @@ bindsym $mod+Control+l exec swaylock
 # ATAJOS — APLICACIONES
 ###############################################################################
 
-set $browser /usr/bin/librewolf
+set $browser    /usr/bin/thorium-browser-avx2
 
-
-
-# Definir wmenu con estilo personalizado
-set $menubin wmenu-run -i \
-    -f "Inter ExtraBold 8" \
-    -p " RUN " \
-    -N 1d2021 -n ebdbb2 \
-    -M 3c3836 -m fabd2f \
-    -S 504945 -s fbf1c7
 
 set $menuapp wmenu-drun
 
 
-bindsym $mod+d          exec $menuapp
-bindsym $mod+Shift+p    exec $menubin
+
+bindsym $mod+d          exec $swaymenu appmenu
+bindsym $mod+Shift+p    exec $swaymenu binmenu
 bindsym $mod+Shift+b    exec $browser
 
 
@@ -314,24 +304,13 @@ bindsym --locked XF86AudioStop  exec playerctl stop
 # Requiere: grim, slurp, wl-copy, imagemagick
 ###############################################################################
 
-# Print                → Captura la pantalla completa al portapapeles
-# $mod+Print           → Captura una región seleccionada al portapapeles
-# $mod+Shift+Print     → Captura el color de un píxel (eyedropper) al portapapeles
-set $screenshot_dir ~/Pictures/Screenshots
-# Screenshot completo -> guarda en archivo
-bindsym Print exec \
-    mkdir -p $screenshot_dir && \
-    grim $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png
+set $screenshot ~/.config/sway/scripts/swayshoot
 
-# Screenshot de región seleccionada -> guarda en archivo
-bindsym $mod+Print exec \
-    mkdir -p $screenshot_dir && \
-    grim -g "$(slurp)" $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png
+bindsym Print exec $screenshot full
 
-# Screenshot de región + copia a portapapeles (ambas cosas)
-bindsym $mod+Shift+Print exec \
-    mkdir -p $screenshot_dir && \
-    grim -g "$(slurp)" - | tee $screenshot_dir/$(date +'%Y-%m-%d_%H-%M-%S').png | wl-copy
+bindsym $mod+Print exec $screenshot area
+
+bindsym $mod+Shift+Print exec $screenshot copy
 
 ###############################################################################
 # REGLAS DE VENTANAS (for_window)
@@ -447,3 +426,8 @@ bar {
         binding_mode           $bred     $bred     $fg0
     }
 }
+
+gaps inner 0
+gaps outer 0
+
+

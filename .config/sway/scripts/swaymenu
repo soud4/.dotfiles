@@ -1,0 +1,66 @@
+#!/usr/bin/env sh
+
+# Colors
+
+# Fuente
+WMENU_FONT="Inter ExtraBold 8"
+
+# Prompt
+DEFAULT_PROMPT=" RUN "
+
+# Colores: normal (fondo/texto) y seleccionado
+WMENU_NORMAL_BG=1d2021
+WMENU_NORMAL_FG=ebdbb2
+WMENU_MATCH_BG=3c3836
+WMENU_MATCH_FG=fabd2f
+WMENU_SELECT_BG=504945
+WMENU_SELECT_FG=fbf1c7
+
+logout() {
+    sel=$(printf 'Sí, salir\nNo, cancelar\n' | wmenu -i \
+        -f "$WMENU_FONT" \
+        -p " ¿Salir de Sway? " \
+        -N "$WMENU_NORMAL_BG" -n "$WMENU_NORMAL_FG" \
+        -M "$WMENU_MATCH_BG" -m "$WMENU_MATCH_FG" \
+        -S "$WMENU_SELECT_BG" -s "$WMENU_SELECT_FG")
+
+    case "$sel" in
+    "Sí, salir") swaymsg exit ;;
+    *) return 0 ;;
+    esac
+}
+
+binmenu() {
+    WMENU_PROMPT=" BINMENU "
+    wmenu-run -i \
+        -f "$WMENU_FONT" \
+        -p "$WMENU_PROMPT" \
+        -N "$WMENU_NORMAL_BG" -n "$WMENU_NORMAL_FG" \
+        -M "$WMENU_MATCH_BG" -m "$WMENU_MATCH_FG" \
+        -S "$WMENU_SELECT_BG" -s "$WMENU_SELECT_FG"
+}
+
+appmenu() {
+    WMENU_PROMPT=" APPMENU "
+    dirs="${XDG_DATA_HOME:-$HOME/.local/share}/applications /usr/local/share/applications /usr/share/applications"
+    list=$(find $dirs -maxdepth 1 -name '*.desktop' 2>/dev/null | sort)
+
+    sel=$(printf '%s\n' "$list" | xargs -I{} basename {} .desktop | wmenu -i \
+        -f "$WMENU_FONT" \
+        -p "$WMENU_PROMPT" \
+        -N "$WMENU_NORMAL_BG" -n "$WMENU_NORMAL_FG" \
+        -M "$WMENU_MATCH_BG" -m "$WMENU_MATCH_FG" \
+        -S "$WMENU_SELECT_BG" -s "$WMENU_SELECT_FG")
+
+    [ -z "$sel" ] && return 0
+    file=$(printf '%s\n' "$list" | grep "/$sel.desktop$" | head -n1)
+    [ -n "$file" ] && gio launch "$file"
+}
+
+case "$1" in
+logout) logout ;;
+binmenu) binmenu ;;
+appmenu) appmenu ;;
+*) notify-send "swaymenu" "accion desconocida" ;;
+
+esac
