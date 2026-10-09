@@ -1,0 +1,5 @@
+font=monospace 11
+
+[warning]
+background=282828FF
+text=ebdbb2FF

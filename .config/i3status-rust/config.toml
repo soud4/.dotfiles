@@ -15,16 +15,28 @@ separator = " | "
 separator_bg = "#282828"
 separator_fg = "#504945"
 
+
+[[block]]
+block = "toggle"
+format = "PAN [$icon]"
+# Comando que IMPRIME "on" si el Bluetooth está encendido.
+command_state = "rfkill list bluetooth | grep -q 'Soft blocked: no' && echo on"
+command_off = "rfkill block bluetooth"
+command_on = "rfkill unblock bluetooth"
+icon_on = "toggle_on"
+icon_off = "toggle_off"
+
 [[block]]
 block = "sound"
-format = " VOL [$volume.eng(hide_unit:true)] |VOL: [MUTED] "
+driver = "pipewire"
+format = " VOL [$volume.eng(hide_unit:true)]|VOL [MUTED] "
 click = [
     { button = "left", cmd = "pactl set-sink-mute @DEFAULT_SINK@ toggle" }
 ]
 
 [[block]]
 block = "sound"
-driver = "pulseaudio"
+driver = "pipewire"
 device_kind = "source"
 format = " MIC [$volume.eng(hide_unit:true)]|MIC [MUTED] "
 click = [
@@ -37,29 +49,6 @@ block = "backlight"
 format = "LIGHT [$brightness.eng(hide_unit:true)]"
 minimum = 5
 maximum = 75
-
-[[block]]
-block = "disk_space"
-path = "/"
-format = "SSD [$available.eng(hide_unit:true, hide_prefix:true)]"
-warning = 10.0
-alert = 5.0
-
-[[block]]
-block = "net"
-device = "wlan0"
-format = "WIFI [$ip]"
-inactive_format = "WIFI [DISCONNECT]" 
-
-[[block]]
-block = "net"
-device = "enp3s0"
-format = "ETH [$ip]"
-inactive_format = "ETH [DISCONNECT]" 
-
-[[block]]
-block = "memory"
-format = " RAM [$mem_used.eng(p:G, w:4, hide_prefix:true, hide_unit:true)]"
 
 [[block]]
 block = "battery"
