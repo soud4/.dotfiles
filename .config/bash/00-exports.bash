@@ -32,6 +32,6 @@ tmux*)
     export COLORTERM=truecolor
     ;;
 esac
-
+PS1='\[\e[38;5;246m\]\u:\h/\[\e[1;38;5;109m\]\W \[\e[1;38;5;214m\]›\[\e[0m\] '
 # Binarios locales del usuario
 [[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
