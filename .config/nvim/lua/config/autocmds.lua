@@ -1,9 +1,9 @@
---- Autocommands that belong to the editor itself.
-local group = require("core.utils").augroup
+local function group(name)
+  return vim.api.nvim_create_augroup("config." .. name, { clear = true })
+end
 
 vim.api.nvim_create_autocmd("TextYankPost", {
   group = group("yank"),
-  desc = "Briefly highlight yanked text",
   callback = function()
     vim.hl.on_yank({ higroup = "IncSearch", timeout = 150 })
   end,
@@ -22,7 +22,6 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 
 vim.api.nvim_create_autocmd("FileType", {
   group = group("quickclose"),
-  desc = "Close auxiliary windows with q",
   pattern = { "help", "lspinfo", "man", "notify", "qf", "checkhealth" },
   callback = function(event)
     vim.bo[event.buf].buflisted = false
@@ -30,15 +29,12 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
--- 'autoread' alone is not enough: Neovim only looks at the disk when asked.
--- This matters when a CLI is editing the same file from another tmux pane.
+-- 'autoread' solo mira el disco cuando se le pide.
 vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave", "BufEnter", "CursorHold" }, {
   group = group("reload"),
-  desc = "Reload the buffer when the file changed on disk",
   callback = function()
     if vim.bo.buftype == "" and vim.fn.mode() ~= "c" then
-      -- vim.schedule is required: a :checktime issued from inside an
-      -- autocommand is deferred and the buffer never actually reloads.
+      -- Un :checktime dentro de un autocmd se difiere y no recarga; por eso el schedule.
       vim.schedule(function()
         pcall(vim.cmd.checktime)
       end)
@@ -48,7 +44,6 @@ vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave", "BufEnter
 
 vim.api.nvim_create_autocmd("FileChangedShellPost", {
   group = group("reload.notify"),
-  desc = "Say so when a file was reloaded from disk",
   callback = function()
     vim.notify("File reloaded from disk", vim.log.levels.WARN)
   end,
