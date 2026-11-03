@@ -38,7 +38,7 @@ default_floating_border pixel 2
 
 # Padding interno del titlebar: horizontal x vertical
 titlebar_padding 1 1
-
+title_align center
 ###############################################################################
 # INPUT — TECLADO
 ###############################################################################
@@ -224,6 +224,7 @@ bindsym $mod+bracketright workspace next
 # Dividir el contenedor actual: horizontal ($mod+b) o vertical ($mod+v)
 bindsym $mod+b splith
 bindsym $mod+v splitv
+bindsym $mod+g layout default
 
 # Cambiar estilo de layout del workspace
 bindsym $mod+s layout stacking   # ventanas apiladas con lista de títulos

@@ -1,71 +1,60 @@
---- Devcontainers vía @devcontainers/cli.
-
+-- Devcontainer helpers using @devcontainers/cli.
 local M = {}
 
--- docker o podman, el que tengas
+-- Use podman if installed, otherwise docker.
 local engine = vim.fn.executable("podman") == 1 and "podman" or "docker"
 
-local function ws()
-	return vim.fn.shellescape(vim.fn.getcwd())
-end
-
+-- Run a command in a terminal split at the bottom.
+-- `new` opens an empty buffer, so termopen doesn't hijack the current file.
 local function term(cmd)
-	vim.cmd("botright split | resize 15")
-	vim.cmd.terminal(cmd)
-	vim.cmd.startinsert()
+  vim.cmd("botright 15new")
+  vim.fn.termopen(cmd)
+  vim.cmd.startinsert()
 end
 
-local function cli(sub, extra)
-	if vim.fn.executable("devcontainer") == 0 then
-		vim.notify("devcontainer CLI no encontrado (npm i -g @devcontainers/cli)", vim.log.levels.ERROR)
-		return
-	end
-	if not vim.uv.fs_stat(vim.fs.joinpath(vim.fn.getcwd(), ".devcontainer")) then
-		vim.notify("No hay .devcontainer/ en " .. vim.fn.getcwd(), vim.log.levels.WARN)
-		return
-	end
-	term(("devcontainer %s --docker-path %s --workspace-folder %s %s"):format(sub, engine, ws(), extra or ""))
+-- Build the base `devcontainer` command for the current project.
+-- Options like --docker-path and --workspace-folder must precede
+-- any positional arguments (e.g. for `devcontainer exec <cmd>`).
+local function dc(subcmd, cmd_args)
+  local dir = vim.fn.shellescape(vim.fn.getcwd())
+  local base = string.format("devcontainer %s --docker-path %s --workspace-folder %s", subcmd, engine, dir)
+  if cmd_args and cmd_args ~= "" then
+    return base .. " " .. cmd_args
+  end
+  return base
 end
 
--- El CLI etiqueta los contenedores con la carpeta del proyecto
-local function by_folder()
-	return ("$(%s ps -aq --filter label=devcontainer.local_folder=%s)"):format(engine, ws())
+-- Find containers of this project by the label the CLI adds.
+local function ids()
+  local dir = vim.fn.shellescape(vim.fn.getcwd())
+  return string.format("$(%s ps -aq --filter label=devcontainer.local_folder=%s)", engine, dir)
 end
-
-local cmds = {
-	DevUp = function()
-		cli("up")
-	end,
-	DevRebuild = function()
-		cli("up", "--remove-existing-container")
-	end,
-	DevShell = function()
-		cli("exec", "sh")
-	end,
-	DevNvim = function()
-		cli("exec", "nvim")
-	end,
-	DevStop = function()
-		term(engine .. " stop " .. by_folder())
-	end,
-	DevDelete = function()
-		term(engine .. " rm -f " .. by_folder())
-	end,
-}
 
 function M.setup()
-	for name, fn in pairs(cmds) do
-		vim.api.nvim_create_user_command(name, fn, {})
-	end
-	local map = function(lhs, cmd, desc)
-		vim.keymap.set("n", lhs, "<cmd>" .. cmd .. "<cr>", { desc = desc })
-	end
-	map("<leader>Du", "DevUp", "Up")
-	map("<leader>Dr", "DevRebuild", "Rebuild")
-	map("<leader>Ds", "DevShell", "Shell")
-	map("<leader>Dn", "DevNvim", "Nvim dentro")
-	map("<leader>Dx", "DevStop", "Stop")
-	map("<leader>Dd", "DevDelete", "Delete")
+  local map = function(lhs, cmd, desc)
+    vim.keymap.set("n", "<leader>D" .. lhs, function()
+      term(cmd())
+    end, { desc = desc })
+  end
+
+  map("u", function()
+    return dc("up")
+  end, "Devcontainer up")
+  map("r", function()
+    return dc("up --remove-existing-container")
+  end, "Devcontainer rebuild")
+  -- `up` first so the shell works even if the container is stopped.
+  -- Its JSON result goes to /dev/null; build progress and errors use
+  -- stderr, so they still show if something fails.
+  map("s", function()
+    return dc("up") .. " > /dev/null && " .. dc("exec", "sh")
+  end, "Devcontainer shell")
+  map("x", function()
+    return engine .. " stop " .. ids()
+  end, "Devcontainer stop")
+  map("d", function()
+    return engine .. " rm -f " .. ids()
+  end, "Devcontainer delete")
 end
 
 return M
